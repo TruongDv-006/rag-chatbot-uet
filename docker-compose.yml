@@ -1,9 +1,9 @@
 version: '3.8'
 
 service:
-  
+  # PHẦN LƯU TRỮ
   postgres_db:
-    image: postgres:15-alpline 
+    image: postgres:15-alpine 
     container-name: uet_postgres
     environment:
       POSTGRES_USER: admin
@@ -47,7 +47,7 @@ service:
     networks:
       - rag_network
 
-  redis:
+  redis_broker:
     image: redis:7-apline
     container-name: uet_redis
     ports:
@@ -59,14 +59,86 @@ service:
       - rag_network
 
 
+# PHẦN XỬ LÝ LOGIC NGHIỆP VỤ
+
   backend-api:
+    build:
+      context: ./backend-api
+    container-name: uet_backend_api
+    #hoc ky phan nay
+    environment:
+      - DB_URL=postgresql://admin:123456@postgres_db:5432/uet_rag_db
+      - QDRANT_URL=http://qdrant_db:6333
+      - REDIS_URL=redis://redis_broker:6379/0
+    
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend-api:/app
+    depends_on:
+      - postgres_db
+      - qdrant_db
+      - redis_broker
+    networks:
+      - rag_network
 
+  worker:
+    build:
+      context: ./worker
+    container-name: uet_worker
+    #HOC THAT KY
+    environment:
+      - QDRANT_URL=http://qdrant_db:6333
+      - REDIS_URL=redis://redis_broker:6379/0
+      - MINIO_URL=http://minio_storage:9000
+    volumes:
+      - ./worker:/app
+    depends_on:
+      - postgres_db
+      - qdrant_db
+      - redis_broker
+    networks:
+      - rag_network
 
+# PHẦN XỬ LÝ GIAO DIỆN VÀ NGINX
 
+  frontend-user:
+    build:
+      context:./frontend-user
+    container-name: uet_frontend_user
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend-api
+    networks:
+      - rag_network
 
+  frontend-admin:
+    build:
+      context:./frontend-admin
+    container_name: uet_frontend_admin
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend-api
+    networks:
+      - rag_network
   
+  nginx_gateway:
+    image: nginx:alpine
+    container-name: uet_nginx
+    ports: 
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend-api
+      - frontend-user
+      - frontend-admin
+    networks:
+      - rag_network
 
-
+# KHAI BÁO CÁC NETWORK VÀ VOLUMES
   networks:
     rag_network:
       driver: bridge
@@ -74,3 +146,5 @@ service:
   volumes:
     postgres_data
     qdrant_data
+    minio_data
+    redis_data
