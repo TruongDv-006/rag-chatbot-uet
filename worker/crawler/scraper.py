@@ -58,8 +58,10 @@ class UetHandbookScraper:
         body_content = soup.find("body")
         if body_content:
             for tag in body_content.find_all(['span', 'p', 'h1', 'h2', 'h3','li','td','th']):
+                if tag.find(['span', 'p', 'h1', 'h2', 'h3', 'li', 'td', 'th']):
+                    continue
                 text = tag.get_text(strip=True)
-                if text:
+                if text and text not in content_blocks:
                     content_blocks.append(text)
         return "\n".join(content_blocks)
 
