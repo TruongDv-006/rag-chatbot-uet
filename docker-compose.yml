@@ -1,5 +1,5 @@
 services:
-  # PHẦN LƯU TRỮ
+  # PHẦN LƯU TRỮ VÀ REDIS
   postgres_db:
     image: postgres:15-alpine 
     container_name: uet_postgres
