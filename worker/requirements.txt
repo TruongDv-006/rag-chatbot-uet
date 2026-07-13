@@ -1,5 +1,8 @@
 requests
 beautifulsoup4
 boto3
-PyPDF2
+pdfplumber
 python-docx
+pytesseract
+pdf2image
+Pillow
