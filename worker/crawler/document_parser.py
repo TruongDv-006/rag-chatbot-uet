@@ -53,7 +53,6 @@ class DocumentParser:
                     ocr_text = str(pytesseract.image_to_string(image, lang='vie') or "")
                     if ocr_text:
                         text_content = text_content + ocr_text + "\n"
-                    print(f"      * Đã quét xong trang {i+1}/{len(images)}")
 
             final_text = self.clean_pdf_text(text_content)
             
