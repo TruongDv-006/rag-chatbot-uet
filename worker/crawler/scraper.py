@@ -1,4 +1,3 @@
-from worker.crawler.document_parser import response
 import os
 import time
 import requests
@@ -56,9 +55,9 @@ class UetHandbookScraper:
 
         content_blocks = []
         # Lay noi dung tu khoi main-content tro di
-        main_content = soup.find("main", class_="main-content")
-        if main_content:
-            for tag in main_content.find_all(['span', 'p', 'h1', 'h2', 'h3']):
+        body_content = soup.find("body")
+        if body_content:
+            for tag in body_content.find_all(['span', 'p', 'h1', 'h2', 'h3','li','td','th']):
                 text = tag.get_text(strip=True)
                 if text:
                     content_blocks.append(text)
@@ -74,10 +73,10 @@ class UetHandbookScraper:
             #Nếu đã được thăm rồi thì bỏ qua 
             if current_url in self.visited_url:
                 continue
-            
             try:
                 # Gửi yêu cầu tới trang web quá 10s thì ngắt bỏ
                 response = self.session.get(current_url, timeout=10)
+                response.encoding = 'utf-8'
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.text,'html.parser')
 
@@ -86,7 +85,7 @@ class UetHandbookScraper:
                     if text_content.strip():
                         # Làm sạch tên tiêu đề (xóa ký tự lạ) để đặt tên file không bị lỗi hệ điều hành
                         safe_title = "".join([c for c in title if c.isalnum() or c in (' ', '-')]).strip()
-                        file_name = f"{safe_title}_{int(time.time())}.json"
+                        file_name = f"{safe_title}.json"
                         file_path = os.path.join(SAVE_DIR, file_name)
                     #Dong goi du lieu
                     data = {
@@ -95,7 +94,7 @@ class UetHandbookScraper:
                         "content": text_content
                     }
                     with open(file_path, 'w', encoding='utf-8') as f:
-                        json.dump(data, f, ensure_ascii=True, indent=4)
+                        json.dump(data, f, ensure_ascii=False, indent=4)
                     #Danh dau da tham 
                     self.visited_url.add(current_url)
                     count+=1
@@ -112,8 +111,7 @@ class UetHandbookScraper:
 if __name__ == "__main__":
     target_url = "https://handbook.uet.vnu.edu.vn"
 
-    crawler = UetHandbookScraper(target_url)
-
+    crawler = UetHandbookScraper(target_url) 
     crawler.crawl()
 
 
