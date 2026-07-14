@@ -3,7 +3,6 @@ import os
 import docx
 import pytesseract
 from pdf2image import convert_from_path
-from PIL import Image
 import re
 
 # Đường dẫn này chứa các file PDF, DOCX tải về
@@ -27,7 +26,12 @@ class DocumentParser:
         
         # 3. MỚI THÊM: Tách các mục lục (Điều X., 1., a)) bị dính chùm xuống dòng mới
         # Cú pháp này tìm các khoảng trắng nằm ngay trước các từ khóa danh sách và biến nó thành \n
-        cleaned = re.sub(r'(?<=[^\s])\s+(?=(Điều \d+\.|[1-9]+\.|[a-z]\)))', '\n', cleaned)
+        cleaned = re.sub(
+        r'(?<=[^\s])(?<!Điều)(?<!ĐIỀU)(?<!Chương)(?<!CHƯƠNG)\s+(?=(Điều\s+\d+|[1-9]+\.|[a-zđĐ]\)))', 
+        '\n', 
+        cleaned,
+        flags=re.IGNORECASE
+        )
         
         # 4. Dọn dẹp khoảng trắng thừa
         cleaned = re.sub(r'[ \t]+', ' ', cleaned)
