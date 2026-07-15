@@ -53,7 +53,6 @@ def process_and_ingest(file_content, filename, folder_type):
         points = points
     )
 if __name__ == "__main__":
-    # Đường dẫn trỏ thẳng tới minio_data
     base_dir = "../../infrastructure/volumes/minio_data"
     
     # 1. Quét thư mục docs_parsed
