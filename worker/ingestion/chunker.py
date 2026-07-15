@@ -89,7 +89,7 @@ def chunk_academic_calendar(text_content, filename):
     return chunks
 
 
-def chunk_raw_web1(json_string, filename):
+def chunk_raw_web(json_string, filename):
     """
     Hàm chunk nội dung từ file json raw_web.
     Đọc json_string để lấy url, title và content, 
@@ -145,14 +145,10 @@ def chunk_raw_web1(json_string, filename):
     return chunks
 
 
-
-
-
-
 def master_chunk(text_content, filename, folder_type):
     """Hàm này quyết định xem nên dùng kiểu chunk nào phụ thuộc vào folder"""
     if folder_type == "raw_web":
-        return chunk_raw_web1(text_content, filename)
+        return chunk_raw_web(text_content, filename)
     else:
         if "KẾ HOẠCH HỌC TẬP" in text_content:
             return chunk_academic_calendar(text_content, filename)
