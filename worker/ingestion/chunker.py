@@ -6,17 +6,87 @@ def chunk_regulatory_handbook(text_content, filename):
     Hàm này dùng để chunk các đoạn văn. Kiểu chunk ở đây theo cấu trúc 
     Chương, Điều,... dùng regex để chunk.
     """
+    chunks = []
+    current_chuong = "Thong tin chung"
+    current_dieu = "Thong tin chung"
+    current_contents = []
+
+    lines = text_content.split("\n")
+    for line in lines:
+        line = line.strip()
+        if not line: continue
+        
+        if re.match(r'^Chương\s+[IVXLCDM\d]+', line, re.IGNORECASE):
+            if current_contents:
+                chunks.append({
+                    "text": "\n".join(current_contents),
+                    "metadata" : {"source":filename, "chuong": current_chuong, "dieu": current_dieu, "type":"quy_che"} 
+                })
+            current_chuong = line
+            current_dieu = "Mo dau chuong"
+            current_contents = [line]
+        elif re.match(r'^Điều\s+\d+', line, re.IGNORECASE):
+            if current_contents:
+                chunks.append({
+                    "text": "\n".join(current_contents),
+                    "metadata" : {"source":filename, "chuong":current_chuong, "dieu":current_dieu, "type":"quy_che"}
+                })
+            current_contents = [line]
+            current_dieu = line
+        else: 
+            current_contents.append(line)
+        
+        if current_contents:
+                chunks.append({
+                    "text": "\n".join(current_contents),
+                    "metadata" : {"source":filename, "chuong":current_chuong, "dieu":current_dieu, "type":"quy_che"}
+                })
+                current_contents = [line]
+        return chunks
 
 def chunk_academic_calendar(text_content, filename):
     """
     Hàm này dùng để chunk các đoạn văn. Kiểu chunk ở đây theo cấu trúc 
     Chương, Điều,... dùng regex để chunk.
     """
+    chunks = []
+    current_hocky = "Thong tin chung"
+    current_chunk_lines = []
+    MAX_LENGTH = 800
 
-
-
-
-
+    lines = text_content.split("\n")
+    for line in lines:
+        line = line.strip()
+        if not line : continue
+        
+        if re.match(r'^HỌC KỲ\s+[I|II|PHỤ]',line, re.IGNORECASE):
+            if current_chunk_lines:
+                text_to_save = f"Giai đoạn: {current_hocky}\nNội dung lịch trình:\n" + "\n".join(current_chunk_lines)
+                chunks.append({
+                    "text" : text_to_save,
+                    "metadata" : {"source": filename, "chuong": "Ke hoach hoc tap", "dieu": current_hocky, "type" : "lich trinh"}
+                })
+                current_chunk_lines = []
+            current_hocky = line
+            continue
+        header_len = len(f"Giai đoạn: {current_hocky}\nNội dung lịch trình:\n")
+        current_len = sum(len(l)+1 for l in current_chunk_lines)
+        if header_len + current_len + len(line) + 1 > MAX_LENGTH:
+            text_to_save = f"Giai đoạn: {current_hocky}\nNội dung lịch trình:\n" + "\n".join(current_chunk_lines)
+            chunks.append({
+                "text" : text_to_save,
+                "metadata" : {"source": filename, "chuong": "Ke hoach hoc tap", "dieu": current_hocky, "type" : "lich trinh"}
+            })
+            current_chunk_lines = [line]
+        else:
+            current_chunk_lines.append(line)
+    if current_chunk_lines:
+        text_to_save = f"Giai đoạn: {current_hocky}\nNội dung lịch trình:\n" + "\n".join(current_chunk_lines)
+        chunks.append({
+            "text" : text_to_save,
+            "metadata" : {"source": filename, "chuong": "Ke hoach hoc tap", "dieu": current_hocky, "type" : "lich trinh"}
+        }) 
+    return chunks
 
 
 def chunk_raw_web1(json_string, filename):
