@@ -23,7 +23,7 @@ class SemanticRetriever:
         for hit in search_result:
             results.append({
                 "doc_id" : hit.id,
-                "content": hit.payload.get("text",""),
+                "content": hit.payload.get("text_content",""),
                 "score": hit.score
             })
 
