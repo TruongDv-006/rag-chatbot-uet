@@ -1,0 +1,1 @@
+# Class chuyên trách đóng gói và quản lý Prompt Template

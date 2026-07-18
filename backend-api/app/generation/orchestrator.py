@@ -1,0 +1,1 @@
+# Class trung tâm điều phối RAG và lọc Anti-Hallucination

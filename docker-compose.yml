@@ -68,12 +68,13 @@ services:
       - DB_URL=postgresql://user:password@postgres_db:5432/uet_rag_db
       - QDRANT_URL=http://qdrant_db:6333
       - REDIS_URL=redis://redis_broker:6379/0
-    
+      - LLM_API_BASE=http://ollama:11434/v1
     ports:
       - "8000:8000"
     volumes:
       - ./backend-api:/app
     depends_on:
+      - ollama
       - postgres_db
       - qdrant_db
       - redis_broker
@@ -135,6 +136,17 @@ services:
       - frontend_admin
     networks:
       - rag_network
+  #OLLAMA
+  ollama:
+    image: ollama/ollama:latest
+    container_name: uet_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - rag_network
 
 # KHAI BÁO CÁC NETWORK VÀ VOLUMES
 networks:
@@ -146,3 +158,4 @@ volumes:
   qdrant_data:
   minio_data:
   redis_data:
+  ollama_data:

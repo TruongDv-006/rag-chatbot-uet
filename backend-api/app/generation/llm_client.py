@@ -1,0 +1,1 @@
+# Interface và các class con kết nối đến Ollama/vLLM (Strategy Pattern)

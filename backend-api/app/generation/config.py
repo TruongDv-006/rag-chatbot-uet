@@ -1,0 +1,1 @@
+# Quản lý cấu hình (ngưỡng score, model name, endpoint)
