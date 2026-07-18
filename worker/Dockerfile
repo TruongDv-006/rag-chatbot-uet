@@ -16,5 +16,7 @@ COPY requirements.txt .
 # Tiến hành cài đặt các thư viện Python (bao gồm pytesseract, pdf2image, Pillow từ requirements)
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Lệnh chạy tạm thời giữ container luôn sống để chờ bạn viết code Celery Worker
-CMD ["python", "-c", "import time; import sys; print('Worker dang doi code xử lý dữ liệu...', flush=True); sys.stdout.flush(); [time.sleep(3600) for _ in range(24)]"]
+# # Lệnh chạy tạm thời giữ container luôn sống để chờ bạn viết code Celery Worker
+# CMD ["python", "-c", "import time; import sys; print('Worker dang doi code xử lý dữ liệu...', flush=True); sys.stdout.flush(); [time.sleep(3600) for _ in range(24)]"]
+# Chạy Celery worker khi container khởi động
+CMD ["celery", "-A", "tasks", "worker", "--loglevel=info"]

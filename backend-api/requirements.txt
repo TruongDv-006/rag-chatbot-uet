@@ -8,3 +8,6 @@ uvicorn
 pydantic
 pydantic-settings
 openai
+
+celery 
+redis

@@ -9,3 +9,9 @@ Pillow
 torch
 sentence-transformers
 qdrant-client
+
+fastapi
+uvicorn
+celery
+redis
+pydantic
