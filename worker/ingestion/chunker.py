@@ -36,13 +36,13 @@ def chunk_regulatory_handbook(text_content, filename):
         else: 
             current_contents.append(line)
         
-        if current_contents:
-                chunks.append({
-                    "text": "\n".join(current_contents),
-                    "metadata" : {"source":filename, "chuong":current_chuong, "dieu":current_dieu, "type":"quy_che"}
-                })
-                current_contents = [line]
-        return chunks
+    if current_contents:
+            chunks.append({
+                "text": "\n".join(current_contents),
+                "metadata" : {"source":filename, "chuong":current_chuong, "dieu":current_dieu, "type":"quy_che"}
+            })
+            current_contents = [line]
+    return chunks
 
 def chunk_academic_calendar(text_content, filename):
     """

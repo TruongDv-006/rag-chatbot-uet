@@ -1,34 +1,31 @@
-# worker/tasks.py
 import os
 from celery import Celery # pyrefly: ignore
+from celery import Task # pyrefly: ignore
 from worker.core.document_processor import DocumentProcessor
 
-# 🔥 ĐÃ SỬA: Chuỗi dự phòng mặc định sẽ trỏ tới container redis_broker nếu chạy trong mạng Docker
-REDIS_URL = os.getenv("REDIS_URL", "redis://redis_broker:6379/0")
+REDIS_URL = os.getenv("REDIS_URL","http://redis_broker:6379/0")
 celery_app = Celery("rag_worker", broker=REDIS_URL, backend=REDIS_URL)
 
-@celery_app.task(name="tasks.process_document_task")
-def process_document_task(file_path: str, file_name: str, document_id: str):
-    """
-    Task chạy ngầm để đọc file, chia đoạn và đẩy vào Qdrant Vector DB
-    """
-    print(f"[Worker] Bắt đầu xử lý tài liệu: {file_name} (ID: {document_id})")
-    
-    try:
-        processor = DocumentProcessor()
-        success = processor.process_and_load(
-            file_path=file_path, 
-            file_name=file_name, 
-            document_id=document_id
-        )
-        
-        if success:
-            print(f"[Worker] Xử lý tài liệu {file_name} thành công 100%!")
-            return {"status": "success", "document_id": document_id}
-        else:
-            print(f"[Worker] Xử lý tài liệu {file_name} thất bại.")
-            return {"status": "failed", "error": "Processing failed"}
+class DocumentIngestionTask(Task):
+    name = "worker.tasks.DocumentIngestionTask"
+
+    def run (self, file_name:str, *args, **kwargs):
+        """
+        Hàm run() đóng vai trò là logic chính của Task
+        Celery sẽ tự động gọi hàm này khi có task mới trong hàng đợi
+        """
+        try:
+            processor = DocumentProcessor()
+            success = processor.process_and_load(file_name=file_name)
+
+            if success:
+                print(f"[Worker Class] Xử lý tài liệu {file_name} thành công hoàn toàn!")
+                return {"status": "success", "file_name": file_name}
             
-    except Exception as e:
-        print(f"[Worker] Lỗi nghiêm trọng khi chạy task: {e}")
-        return {"status": "error", "error": str(e)}
+            print(f"[Worker Class] Xử lý tài liệu {file_name} thất bại.")
+            return {"status": "failed", "error": "Processing failed"}
+        except Exception as e:
+            print(f"[Worker Class] Lỗi nghiêm trọng khi thực thi task: {e}")
+            return {"status": "error", "error": str(e)}
+
+celery_app.register_task(DocumentIngestionTask())
