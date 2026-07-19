@@ -39,12 +39,12 @@ class RAGGenerator:
             print(f"[Hệ thống chặn ngầm] Câu hỏi '{query}' bị từ chối vì không có tài liệu nào đạt chuẩn.")
             return self.fallback_message
 
-        context_text = "\n\n".join([doc["text"] for doc in valid_docs])
+        # context_text = "\n\n".join([doc["text"] for doc in valid_docs])
 
-        messages = self.prompt_manager.create_messages(self, context_text, query)
+        messages = self.prompt_manager.create_messages(valid_docs, query)
 
         try:
-            answer = self.llm_client.generate(self, messages)
+            answer = self.llm_client.generate(messages)
             return answer
         except Exception as e:
             print("Lỗi hệ thống: {e}")

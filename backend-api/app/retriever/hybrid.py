@@ -21,7 +21,7 @@ class HybridRetrieve:
             documents = document
         )
         self.rank_fusion = RankFusion(k=60)
-        self.reranker = ReRanker(self, model_name = embed_model)
+        self.reranker = ReRanker(model_name = embed_model)
 
     def _scroll_all_documents_from_qdrant(self):
         """
