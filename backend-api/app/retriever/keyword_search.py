@@ -10,7 +10,8 @@ class KeywordRetriever:
         Mỗi phần tử có cấu trúc như sau:(cái này tự định nghĩa)
         {
         "doc_id": uuid,
-        "content": payload["text_content"]
+        "content": payload["text_content"],
+        "source": payload["source"]
         }
         """
         self.documents = documents
@@ -38,6 +39,7 @@ class KeywordRetriever:
             results.append({
                 "doc_id": self.documents[i]["doc_id"],
                 "content": self.documents[i]["content"],
+                "source": self.documents[i]["source"],
                 "score": float(doc_scores[i])
             })
         return results 

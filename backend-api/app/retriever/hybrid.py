@@ -41,7 +41,8 @@ class HybridRetrieve:
                 payload = point.payload if point.payload else {}
                 documents.append({
                     "doc_id": str(point.id),
-                    "content": str(payload.get("text_content",""))
+                    "content": str(payload.get("text_content","")),
+                    "source": str(payload.get("source",""))
                 })
             if next_page_offset is None:
                 break
