@@ -93,7 +93,7 @@ class DocumentParser:
             content = ""
 
             if(filename.lower().endswith('.pdf')):
-                content = self.parse_pdf(self,file_path)
+                content = self.parse_pdf(self, file_path)
             elif (filename.lower().endswith('.docx')):
                 content = self.parse_docx(file_path)
             else:
