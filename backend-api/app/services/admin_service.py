@@ -23,24 +23,3 @@ class AdminService:
 
 ###### Cần cài thêm cái tài khoản admin mặc định
 
-
-
-
-
-
-
-# # app/routes/chat.py
-# from fastapi import APIRouter, Depends
-# from app.utils.security import get_current_user # Nhập Bác bảo vệ vào
-
-# @router.post("/chat")
-# def chat_with_rag(
-#     request: ChatRequest, 
-#     service: ChatService = Depends(get_chat_service),
-#     # CHỈ CẦN THÊM DÒNG NÀY: Bác bảo vệ sẽ tự động chặn hoặc cho qua
-#     current_user_email: str = Depends(get_current_user) 
-# ):
-#     # Khách đã lọt được vào đây nghĩa là Token xịn 100%
-#     print(f"Sinh viên {current_user_email} vừa hỏi: {request.message}")
-    
-#     return service.process_message(request.message)
