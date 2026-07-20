@@ -65,7 +65,7 @@ services:
     container_name: uet_backend_api
     #hoc ky phan nay
     environment:
-      - DB_URL=postgresql://user:password@postgres_db:5432/uet_rag_db
+      - DATABASE_URL=postgresql://user:password@postgres_db:5432/uet_rag_db
       - QDRANT_URL=http://qdrant_db:6333
       - REDIS_URL=redis://redis_broker:6379/0
       - LLM_API_BASE=http://ollama:11434/v1
