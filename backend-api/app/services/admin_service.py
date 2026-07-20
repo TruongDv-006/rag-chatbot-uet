@@ -20,6 +20,3 @@ class AdminService:
         )
 
         return task.id
-
-###### Cần cài thêm cái tài khoản admin mặc định
-

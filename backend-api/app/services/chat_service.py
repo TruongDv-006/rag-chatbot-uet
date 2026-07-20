@@ -5,6 +5,9 @@ from qdrant_client import QdrantClient
 from app.retriever.hybrid import HybridRetrieve # pyrefly: ignore
 from app.generation.llm_client import OpenAICompatibleClient # pyrefly: ignore
 from app.generation.orchestrator import RAGGenerator # pyrefly: ignore
+from sqlalchemy.orm import Session # pyrefly: ignore
+from app.models.user import User # pyrefly: ignore
+from app.models.chat import ChatSession, ChatMessage # pyrefly: ignore
 
 class ChatService:
     def __init__(self):
@@ -35,11 +38,44 @@ class ChatService:
         return response.json().get("embedding",[])
 
 
-    def process_message(self, message:str):
+    def process_message(self,db: Session, message:str, username:str, session_id:int | None=None):
         try:
+            # Tìm ID của sinh viên đang Chat từ DATABASE
+            user = db.query(User).filter(User.username==username).first()
+            if not user:
+                return {"reply": "Không tìm thấy thông tin thành viên hệ thống!", "source": {}}
+            # Quản lý phiên chat
+            current_session = None
+            if session_id:
+                #Nếu có session cũ lôi nó ra dùng tiếp (bảo mật theo user_id)
+                current_session=db.query(ChatSession).filter(
+                    ChatSession.id==session_id,
+                    ChatSession.user_id ==user.id
+                ).first()
+
+            #Nếu không tìm thấy phiên cũ đưa ra chat mới tự động đặt tên
+            if not current_session:
+                words = message.split()
+                auto_title = " ".join(words[:5]) + ("..." if len(words) > 5 else "")
+
+                current_session = ChatSession(
+                    title = auto_title,
+                    user_id = user.id
+                )
+                db.add(current_session)
+                db.commit()
+                db.refresh(current_session)
+
+            #Lưu câu hỏi của sinh viên xuống DB ChatMessage
+            user_msg_obj = ChatMessage(
+                role="student",
+                content=message,
+                session_id=current_session.id
+            )
+            db.add(user_msg_obj)
+
             # Embedding câu hỏi thành vector
             query_vector = self._get_embedding(message)
-            #
             retrieved_docs = self.retriever.search(
                 query = message,
                 query_vector = query_vector,
@@ -60,10 +96,24 @@ class ChatService:
 
             for index, doc in enumerate(valid_docs, start=1):
                 mapped_sources[str(index)]=doc.get("source","Sổ tay UET")
+
+            ai_msg_obj = ChatMessage(
+                role="assistant",
+                content=reply_text,
+                session_id=current_session.id
+            )
+
+            db.add(ai_msg_obj)
+            db.commit()
             return {
+                "session_id": current_session.id,
                 "reply":reply_text,
                 "source":mapped_sources
             }
         except Exception as e:
+            db.rollback()
             return {"rely":"Hệ thống đang gặp lỗi sự cố: {str(e)}", "source":[]}
+
+
+
 
