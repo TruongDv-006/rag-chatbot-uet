@@ -115,5 +115,57 @@ class ChatService:
             return {"rely":"Hệ thống đang gặp lỗi sự cố: {str(e)}", "source":[]}
 
 
+    def get_user_sessions(self, db:Session, username:str):
+        """Lấy danh sách các cuộc trò chuyện cũ để hiển thị lên Sidebar"""
+        user = db.query(User).filter(User.username==username).first()
+
+        if not user:
+            return []
+
+        sessions = db.query(ChatSession).filter(
+            ChatSession.user_id==user.id
+        ).order_by(ChatSession.created_at.desc().all())
+
+        return [
+            {
+                "session_id": s.id,
+                "title": s.title,
+                "created_at": s.created_at.isoformat()
+            }
+            for s in sessions
+        ]
+
+
+    def get_session_messages(self, db:Session, username:str, session_id:str):
+        """Tải lại toàn bộ tin nhắn cũ khi bấm vào một cuộc trò chuyện ở Sidebar"""
+
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            return {"error": "Không tìm thấy người dùng"}
+
+
+        session = db.query(ChatSession).filter(
+            ChatSession.id == session_id,
+            ChatSession.user_id == user.id
+        ).first()
+
+        if not session:
+            return {"error": "Không tìm thấy phiên trò chuyện hoặc bạn không có quyền xem!"}
+        
+        messages = db.query(ChatMessage).filter(
+            ChatMessage.session_id == session_id
+        ).order_by(ChatMessage.created_at.asc()).all()
+
+
+        return [
+            {
+                "id": m.id,
+                "role": m.role, # "student" hoặc "assistant"
+                "content": m.content,
+                "created_at": m.created_at.isoformat()
+            }
+            for m in messages
+        ]
+
 
 
