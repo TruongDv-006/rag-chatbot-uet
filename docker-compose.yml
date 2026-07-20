@@ -69,6 +69,7 @@ services:
       - QDRANT_URL=http://qdrant_db:6333
       - REDIS_URL=redis://redis_broker:6379/0
       - LLM_API_BASE=http://ollama:11434/v1
+      - SECRET_KEY=UET_RAG_SUPER_SECRET_KEY_2026
     ports:
       - "8000:8000"
     volumes:

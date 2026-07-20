@@ -27,18 +27,18 @@ class DocumentProcessor:
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(size=1024, distance=Distance.COSINE),
             )
-    def process_and_load(self, file_name:str):
+    def process_and_load(self, file_path:str):
+        file_name = os.path.basename(file_path)
         # Xử lý file thô (.pdf, .docx) mà người dùng upload lên bằng DocumentParser 
         base_dir = "/app/infrastructure/volumes/minio_data"
         folder_type = "doc_parsed"
-        source_path = os.path.join(base_dir, "documents", folder_type)
 
         parser = DocumentParser()
         content = ""
         if file_name.lower().endswith(".pdf"):
-            raw_text = parser.parse_pdf(parser, source_path)
+            raw_text = parser.parse_pdf(parser, file_path = file_path)
         elif file_name.lower().endswith(".docx"):
-            raw_text = parser.parse_docx(source_path)
+            raw_text = parser.parse_docx(file_path = file_path)
         else:
             print("Không hỗ trợ định dạng này")
             return False

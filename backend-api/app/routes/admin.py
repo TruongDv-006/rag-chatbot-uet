@@ -1,17 +1,21 @@
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+import os   
+from fastapi import APIRouter, Depends, UploadFile, File
 from app.services.admin_service import AdminService # pyrefly: ignore
 from app.utils.security import get_current_admin # pyrefly:ignore
 
 router = APIRouter()
 
-class UploadRequest(BaseModel):
-    file_name:str
+UPLOAD_DIR = "/app/infrastructure/volumes/minio_data/documents"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/upload-doc")
-def upload_document(request: UploadRequest, service: AdminService = Depends(), current_admin: str = Depends(get_current_admin)):
-    print(f"[Admin API] Tài khoản {current_admin} đang đẩy file {request.file_name} vào hàng đợi Celery")
-    task_id = service.queue_docment_processing(request.file_name)
+def upload_document(file: UploadFile = File(...), service: AdminService = Depends(), current_admin: str = Depends(get_current_admin)):
+    filename = file.filename if file.filename else "unknown_document.pdf"
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    with open(file_path, "wb") as buffer:
+        buffer.write(file.file.read())
+
+    task_id = service.queue_docment_processing(file_path)
     return {
         "message":"Tài liệu đã được đưa vào hàng đợi",
         "task_id":task_id,
