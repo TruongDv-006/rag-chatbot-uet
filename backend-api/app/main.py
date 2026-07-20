@@ -2,7 +2,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import chat, admin # pyrefly: ignore
+from app.core.database import engine, Base # pyrefly: ignore
+from app.models.user import User # pyrefly: ignore
 
+# Quét tất cả engine thiết kế và tự động xây bảng dưới Postgres nếu chưa có
+Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="API RAG Sổ tay UET",
     description = "Hệ thống Backend cho Chatbot sinh viên và Phòng đào tạo",
