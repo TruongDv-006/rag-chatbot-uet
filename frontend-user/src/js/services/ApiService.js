@@ -1,29 +1,69 @@
+/**
+ * ApiService.js – Toàn bộ lời gọi HTTP đến Backend API
+ * Tự động đính kèm JWT Bearer Token vào mọi request.
+ */
+import { CONFIG } from '../config.js';
+
 export class ApiService {
-    constructor(baseUrl = 'http://localhost:8000') {
-        this.baseUrl = baseUrl; // Địa chỉ chạy API của Backend
+    constructor(authService) {
+        this.authService = authService;
+        this.baseUrl = CONFIG.BASE_URL;
     }
 
-    // Hàm gọi API POST /chat gửi kèm lịch sử cuộc trò chuyện
-    async sendChat(historyPayload) {
-        try {
-            const response = await fetch(`${this.baseUrl}/chat`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                // Biến đổi mảng dữ liệu lịch sử thành chuỗi JSON để truyền qua mạng
-                body: JSON.stringify({ history: historyPayload })
-            });
+    /** Tạo headers chuẩn với Bearer token */
+    _headers(extra = {}) {
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.authService.getToken()}`,
+            ...extra,
+        };
+    }
 
-            if (!response.ok) {
-                throw new Error(`Lỗi kết nối Backend! Mã lỗi: ${response.status}`);
-            }
-
-            // Trả về kết quả dạng JSON chứa { answer: "...", sources: [...] }
-            return await response.json(); 
-        } catch (error) {
-            console.error("Lỗi tại ApiService:", error);
-            throw error; // Đẩy lỗi ra ngoài để Controller xử lý hiển thị lỗi lên UI
+    /** Xử lý response chung – throw nếu lỗi */
+    async _handleResponse(res) {
+        if (res.status === 401) {
+            this.authService.clearToken();
+            this.authService.redirectToLogin();
+            throw new Error('Phiên đăng nhập hết hạn');
         }
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail ?? `Lỗi ${res.status}`);
+        }
+        return res.json();
+    }
+
+    /**
+     * POST /chat – Gửi tin nhắn
+     * @param {string} message
+     * @param {number|null} sessionId
+     */
+    async sendChat(message, sessionId = null) {
+        const res = await fetch(`${this.baseUrl}/chat`, {
+            method: 'POST',
+            headers: this._headers(),
+            body: JSON.stringify({ message, session_id: sessionId }),
+        });
+        return this._handleResponse(res);
+    }
+
+    /**
+     * GET /sessions – Lấy danh sách phiên chat
+     */
+    async getSessions() {
+        const res = await fetch(`${this.baseUrl}/sessions`, {
+            headers: this._headers(),
+        });
+        return this._handleResponse(res);
+    }
+
+    /**
+     * GET /sessions/{id}/messages – Lấy lịch sử tin nhắn của 1 phiên
+     */
+    async getSessionMessages(sessionId) {
+        const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/messages`, {
+            headers: this._headers(),
+        });
+        return this._handleResponse(res);
     }
 }

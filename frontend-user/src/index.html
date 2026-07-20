@@ -3,41 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ tay UET Chatbot</title>
-    <!-- 1. Đường dẫn liên kết đến file CSS để sau này làm đẹp -->
+    <meta name="description" content="UET RAG Chatbot – Hệ thống hỏi đáp thông minh dành cho sinh viên Đại học Công nghệ, ĐHQGHN">
+    <title>UET RAG Chatbot – Sổ tay Sinh viên</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Main CSS -->
     <link rel="stylesheet" href="css/style.css">
-    <!-- 2. Nhúng thư viện icon từ trên mạng về để có hình nút gửi máy bay giấy -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-    <!-- Khung lớn bao bọc toàn bộ ứng dụng Chat -->
-    <div class="chat-container">
-        
-        <!-- Thanh tiêu đề ở trên cùng -->
-        <header class="chat-header">
-            <h2>Sổ tay UET Chatbot</h2>
-        </header>
-        
-        <!-- Vùng không gian hiển thị các tin nhắn chat (Đặt id để JS sau này tìm thấy) -->
-        <main class="chat-box" id="chatBox">
-            <!-- Hiện tại để trống, sau này JavaScript sẽ tự động chèn tin nhắn vào đây -->
-        </main>
-
-        <!-- Thanh công cụ nhập liệu ở dưới cùng -->
-        <footer class="chat-input-area">
-            <!-- Ô để người dùng gõ chữ -->
-            <input type="text" id="userInput" placeholder="Nhập câu hỏi của bạn..." />
-            <!-- Nút bấm gửi tin nhắn -->
-            <button id="sendBtn">
-                <i class="fas fa-paper-plane"></i> <!-- Icon máy bay giấy -->
-            </button>
-        </footer>
-
+    <!-- =====================================================================
+         AUTH GUARD OVERLAY: Hiển thị khi chưa có token
+    ====================================================================== -->
+    <div id="authOverlay" class="auth-overlay hidden">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="logo-ring">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+            </div>
+            <h1 class="auth-title">UET RAG System</h1>
+            <p class="auth-subtitle">Bạn chưa đăng nhập. Vui lòng đăng nhập để sử dụng chatbot.</p>
+            <a id="goToLoginBtn" href="#" class="auth-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Đến trang đăng nhập
+            </a>
+        </div>
     </div>
 
-    <!-- 3. Nhúng file JavaScript đầu não vào. 
-         Lưu ý phải có type="module" thì các file JS sau này mới kết nối theo kiểu OOP được -->
+    <!-- =====================================================================
+         MAIN APP LAYOUT
+    ====================================================================== -->
+    <div id="appLayout" class="app-layout hidden">
+
+        <!-- ======= SIDEBAR ======= -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-name">UET RAG</span>
+                        <span class="brand-tagline">Chatbot Sổ tay</span>
+                    </div>
+                </div>
+                <button id="closeSidebarBtn" class="icon-btn sidebar-close-btn" title="Đóng sidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- New Chat Button -->
+            <div class="sidebar-actions">
+                <button id="newChatBtn" class="new-chat-btn">
+                    <i class="fas fa-plus"></i>
+                    <span>Cuộc trò chuyện mới</span>
+                </button>
+            </div>
+
+            <!-- Sessions List -->
+            <div class="sessions-section">
+                <div class="sessions-label">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    Lịch sử hội thoại
+                </div>
+                <div id="sessionsList" class="sessions-list">
+                    <div class="sessions-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Đang tải...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer: User Info -->
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Sinh viên</span>
+                        <span class="user-role">Người dùng</span>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="icon-btn logout-btn" title="Đăng xuất">
+                    <i class="fas fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay (mobile) -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+        <!-- ======= MAIN CONTENT ======= -->
+        <main class="main-content">
+
+            <!-- Top Header Bar -->
+            <header class="topbar">
+                <button id="openSidebarBtn" class="icon-btn topbar-menu-btn" title="Mở menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="topbar-title" id="topbarTitle">
+                    <i class="fas fa-comments"></i>
+                    <span>Cuộc trò chuyện mới</span>
+                </div>
+                <div class="topbar-actions">
+                    <button id="clearChatBtn" class="icon-btn" title="Xoá cuộc trò chuyện hiện tại">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Area -->
+            <div class="chat-area">
+
+                <!-- Welcome Screen (khi chưa có tin nhắn) -->
+                <div id="welcomeScreen" class="welcome-screen">
+                    <div class="welcome-hero">
+                        <div class="welcome-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h2 class="welcome-title">Xin chào! Tôi là UET Assistant</h2>
+                        <p class="welcome-desc">
+                            Hãy hỏi tôi bất cứ điều gì về <strong>Sổ tay sinh viên UET</strong>,
+                            quy chế đào tạo, học phí, chương trình học...
+                        </p>
+                    </div>
+
+                    <!-- Quick Suggestions -->
+                    <div class="suggestions-grid">
+                        <button class="suggestion-card" data-question="Học phí các chương trình đào tạo tại UET là bao nhiêu?">
+                            <i class="fas fa-coins suggestion-icon"></i>
+                            <span>Học phí UET là bao nhiêu?</span>
+                        </button>
+                        <button class="suggestion-card" data-question="Điều kiện để được xét học bổng khuyến khích học tập tại UET là gì?">
+                            <i class="fas fa-medal suggestion-icon"></i>
+                            <span>Điều kiện xét học bổng</span>
+                        </button>
+                        <button class="suggestion-card" data-question="Quy trình đăng ký học lại và học cải thiện tại UET như thế nào?">
+                            <i class="fas fa-rotate-right suggestion-icon"></i>
+                            <span>Đăng ký học lại, học cải thiện</span>
+                        </button>
+                        <button class="suggestion-card" data-question="Điều kiện và quy trình xét tốt nghiệp đại học tại UET là gì?">
+                            <i class="fas fa-scroll suggestion-icon"></i>
+                            <span>Điều kiện xét tốt nghiệp</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Message List -->
+                <div id="chatBox" class="chat-box hidden">
+                    <!-- Messages are injected here by JS -->
+                </div>
+
+                <!-- Typing Indicator -->
+                <div id="typingIndicator" class="typing-indicator hidden">
+                    <div class="typing-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="typing-text">UET Assistant đang trả lời...</span>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea
+                        id="userInput"
+                        class="chat-input"
+                        placeholder="Nhập câu hỏi của bạn về Sổ tay UET..."
+                        rows="1"
+                        maxlength="2000"
+                    ></textarea>
+                    <div class="input-controls">
+                        <span class="char-count" id="charCount">0 / 2000</span>
+                        <button id="sendBtn" class="send-btn" disabled title="Gửi tin nhắn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                <p class="input-disclaimer">
+                    <i class="fas fa-circle-info"></i>
+                    UET Assistant có thể mắc lỗi. Vui lòng kiểm chứng thông tin quan trọng.
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <!-- =====================================================================
+         TOAST NOTIFICATION
+    ====================================================================== -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- =====================================================================
+         CONFIRM MODAL
+    ====================================================================== -->
+    <div id="confirmModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-icon">
+                <i class="fas fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="modalTitle" class="modal-title">Xác nhận</h3>
+            <p id="modalDesc" class="modal-desc">Bạn có chắc chắn muốn thực hiện thao tác này?</p>
+            <div class="modal-actions">
+                <button id="modalCancelBtn" class="modal-btn modal-btn-cancel">Huỷ</button>
+                <button id="modalConfirmBtn" class="modal-btn modal-btn-confirm">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JS (ES Module) -->
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

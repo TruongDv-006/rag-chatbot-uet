@@ -1,160 +1,555 @@
 /* ==========================================================================
-   1. CẤU HÌNH CHUNG (RESET SYSTEM)
+   UET RAG CHATBOT – FRONTEND USER – STYLE.CSS
+   Design: Dark Mode Premium + Glassmorphism
    ========================================================================== */
-* {
-    box-sizing: border-box; /* Giúp tính toán kích thước ô chuẩn xác không bị tràn */
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Phông chữ hiện đại */
+
+/* ---------- 1. DESIGN TOKENS ---------- */
+:root {
+  --bg-base:       #0d0f17;
+  --bg-surface:    #13162a;
+  --bg-elevated:   #1a1f38;
+  --bg-glass:      rgba(26, 31, 56, 0.85);
+
+  --accent-primary:  #4f8ef7;
+  --accent-hover:    #6aa3ff;
+  --accent-glow:     rgba(79, 142, 247, 0.22);
+
+  --gradient-brand: linear-gradient(135deg, #4f8ef7 0%, #7c5cfc 100%);
+  --gradient-bot:   linear-gradient(135deg, #1a1f38 0%, #232847 100%);
+
+  --text-primary:   #e8eaf6;
+  --text-secondary: #8b90b8;
+  --text-muted:     #545880;
+
+  --border-subtle:  rgba(255,255,255,0.07);
+  --border-focus:   rgba(79,142,247,0.5);
+
+  --shadow-card:    0 8px 32px rgba(0,0,0,0.45);
+  --shadow-glow:    0 0 24px rgba(79,142,247,0.18);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --sidebar-w: 280px;
+  --topbar-h:  60px;
+  --font: 'Inter', system-ui, sans-serif;
+
+  --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
 }
+
+/* ---------- 2. RESET & BASE ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 15px; }
 
 body {
-    background-color: #f4f6f9; /* Màu nền xám nhạt dịu mắt cho toàn bộ trang web */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh; /* Căn giữa khung chat theo chiều dọc màn hình */
+  font-family: var(--font);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow: hidden;
+  line-height: 1.6;
 }
 
-/* ==========================================================================
-   2. KHUNG CHAT CHÍNH (CHAT CONTAINER)
-   ========================================================================== */
-.chat-container {
-    width: 100%;
-    max-width: 850px; /* Độ rộng tối đa chuẩn cho một khung chat máy tính */
-    height: 90vh;      /* Chiều cao chiếm 90% màn hình */
-    background: #ffffff;
-    border-radius: 16px; /* Bo tròn các góc lớn nhìn rất mềm mại */
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ phía sau tạo độ nổi */
-    display: flex;
-    flex-direction: column; /* Xếp Header, Nội dung và Input theo chiều dọc */
-    overflow: hidden;
+a { color: var(--accent-primary); text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: var(--font); }
+textarea { font-family: var(--font); }
+
+.hidden { display: none !important; }
+
+/* ---------- 3. AUTH OVERLAY ---------- */
+.auth-overlay {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 30% 30%, rgba(79,142,247,0.12) 0%, var(--bg-base) 70%);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
 }
 
-/* Thanh tiêu đề trên cùng */
-.chat-header {
-    padding: 20px;
-    background: #1e3a8a; /* Màu xanh đậm thương hiệu (giống màu đặc trưng của Bách Khoa/UET) */
-    color: #ffffff;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.auth-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  max-width: 420px; width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  animation: fadeSlideUp 0.5s ease both;
 }
 
-/* ==========================================================================
-   3. VÙNG HIỂN THỊ TIN NHẮN (CHAT BOX)
-   ========================================================================== */
+.auth-logo { margin-bottom: 24px; }
+.logo-ring {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 30px; color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+
+.auth-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 10px; }
+.auth-subtitle { color: var(--text-secondary); margin-bottom: 28px; line-height: 1.6; }
+
+.auth-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--gradient-brand);
+  color: #fff; font-weight: 600; font-size: 0.95rem;
+  padding: 14px 32px; border-radius: var(--radius-lg);
+  transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+  box-shadow: var(--shadow-glow);
+}
+.auth-btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(79,142,247,0.35); }
+
+/* ---------- 4. APP LAYOUT ---------- */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* ---------- 5. SIDEBAR ---------- */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  display: flex; flex-direction: column;
+  height: 100vh;
+  transition: transform var(--transition);
+  z-index: 200;
+  position: relative;
+}
+
+.sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  background: var(--gradient-brand);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #fff;
+  box-shadow: var(--shadow-glow);
+  flex-shrink: 0;
+}
+.brand-name  { display: block; font-weight: 700; font-size: 1rem; color: var(--text-primary); }
+.brand-tagline { display: block; font-size: 0.72rem; color: var(--text-secondary); }
+
+.sidebar-close-btn { display: none; }
+
+.sidebar-actions { padding: 14px 12px; }
+
+.new-chat-btn {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  background: var(--accent-glow); color: var(--accent-primary);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-md);
+  padding: 11px 16px; font-size: 0.88rem; font-weight: 600;
+  transition: background var(--transition), transform var(--transition);
+}
+.new-chat-btn:hover { background: rgba(79,142,247,0.18); transform: translateY(-1px); }
+
+/* Sessions */
+.sessions-section { flex: 1; overflow-y: auto; padding: 0 8px; }
+.sessions-section::-webkit-scrollbar { width: 4px; }
+.sessions-section::-webkit-scrollbar-track { background: transparent; }
+.sessions-section::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 4px; }
+
+.sessions-label {
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 8px 6px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+.sessions-loading, .sessions-empty {
+  padding: 24px 12px; text-align: center;
+  color: var(--text-muted); font-size: 0.85rem;
+}
+.sessions-loading i, .sessions-empty i { display: block; font-size: 1.4rem; margin-bottom: 8px; }
+
+.session-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: background var(--transition);
+  margin-bottom: 2px; position: relative;
+}
+.session-item:hover { background: var(--bg-elevated); }
+.session-item.active { background: var(--accent-glow); border: 1px solid var(--border-focus); }
+
+.session-icon {
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  background: var(--bg-elevated); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--text-secondary); flex-shrink: 0;
+}
+.session-item.active .session-icon { background: var(--accent-glow); color: var(--accent-primary); }
+
+.session-info { flex: 1; min-width: 0; }
+.session-title { font-size: 0.84rem; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.session-meta  { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+
+/* Sidebar Footer */
+.sidebar-footer {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+.user-profile { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.user-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--gradient-brand); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+}
+.user-name { display: block; font-size: 0.88rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { display: block; font-size: 0.72rem; color: var(--text-secondary); }
+
+.icon-btn {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font-size: 15px;
+  transition: background var(--transition), color var(--transition);
+  flex-shrink: 0;
+}
+.icon-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.logout-btn:hover { color: #f87171 !important; background: rgba(248,113,113,0.1) !important; }
+
+/* ---------- 6. SIDEBAR OVERLAY (mobile) ---------- */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 190; backdrop-filter: blur(2px);
+}
+
+/* ---------- 7. MAIN CONTENT ---------- */
+.main-content {
+  flex: 1; display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden; min-width: 0;
+  background: var(--bg-base);
+}
+
+/* Topbar */
+.topbar {
+  height: var(--topbar-h);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(13,15,23,0.85);
+  backdrop-filter: blur(12px);
+  flex-shrink: 0; z-index: 10;
+}
+
+.topbar-menu-btn { display: none; }
+
+.topbar-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 0.95rem; color: var(--text-primary);
+  flex: 1; min-width: 0;
+}
+.topbar-title i { color: var(--accent-primary); flex-shrink: 0; }
+.topbar-title span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.topbar-actions { display: flex; gap: 4px; }
+
+/* ---------- 8. CHAT AREA ---------- */
+.chat-area {
+  flex: 1; overflow: hidden;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+
+/* Welcome Screen */
+.welcome-screen {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 24px; overflow-y: auto; gap: 36px;
+}
+
+.welcome-hero { text-align: center; }
+.welcome-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--gradient-brand);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; color: #fff; margin: 0 auto 20px;
+  box-shadow: var(--shadow-glow), 0 0 60px rgba(79,142,247,0.15);
+  animation: float 3s ease-in-out infinite;
+}
+
+.welcome-title { font-size: 1.7rem; font-weight: 700; margin-bottom: 12px; }
+.welcome-desc  { color: var(--text-secondary); max-width: 480px; margin: 0 auto; }
+.welcome-desc strong { color: var(--accent-primary); }
+
+.suggestions-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px; width: 100%; max-width: 600px;
+}
+
+.suggestion-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px; text-align: left;
+  color: var(--text-primary); font-size: 0.85rem; font-weight: 500;
+  transition: border-color var(--transition), background var(--transition), transform var(--transition), box-shadow var(--transition);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.suggestion-card:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-elevated);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-glow);
+}
+.suggestion-icon { font-size: 1.3rem; color: var(--accent-primary); }
+
+/* Chat Box */
 .chat-box {
-    flex: 1; /* Tự động co giãn chiếm toàn bộ không gian trống ở giữa */
-    padding: 25px;
-    overflow-y: auto; /* Tự động hiện thanh cuộn dọc khi tin nhắn quá dài */
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Khoảng cách giữa các dòng tin nhắn */
-    background-color: #fafafa;
+  flex: 1; overflow-y: auto;
+  padding: 28px 20px 12px;
+  display: flex; flex-direction: column; gap: 20px;
+  scroll-behavior: smooth;
 }
+.chat-box::-webkit-scrollbar { width: 5px; }
+.chat-box::-webkit-scrollbar-track { background: transparent; }
+.chat-box::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 4px; }
 
-/* Định dạng cấu trúc chung của một dòng tin nhắn */
+/* Messages */
 .message {
-    display: flex;
-    width: 100%;
+  display: flex; gap: 12px; align-items: flex-start;
+  animation: fadeSlideUp 0.3s ease both;
+  max-width: 840px; width: 100%; margin: 0 auto;
 }
 
-/* Nếu là tin nhắn của Người dùng: Đẩy sang bên PHẢI */
-.user-message {
-    justify-content: flex-end;
-}
+.user-message { flex-direction: row-reverse; }
 
-/* Nếu là tin nhắn của Bot: Đẩy sang bên TRÁI */
-.bot-message {
-    justify-content: flex-start;
+.msg-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
 }
+.bot-message  .msg-avatar { background: var(--gradient-brand); color: #fff; }
+.user-message .msg-avatar { background: var(--bg-elevated); color: var(--accent-primary); border: 1px solid var(--border-focus); }
 
-/* Bong bóng chứa nội dung chữ */
+.msg-content { display: flex; flex-direction: column; gap: 6px; max-width: 75%; }
+
 .bubble {
-    max-width: 70%; /* Không cho tin nhắn dài quá 70% chiều rộng khung chat */
-    padding: 14px 18px;
-    border-radius: 18px;
-    line-height: 1.5;
-    font-size: 15px;
-    word-wrap: break-word; /* Tự động xuống dòng khi gặp từ quá dài */
+  padding: 13px 18px; border-radius: var(--radius-lg);
+  font-size: 0.9rem; line-height: 1.7; word-break: break-word;
 }
 
-/* Style riêng cho bong bóng của USER */
 .user-message .bubble {
-    background: #2563eb; /* Màu xanh rực rỡ */
-    color: #ffffff;
-    border-bottom-right-radius: 4px; /* Làm nhọn góc dưới bên phải tạo hiệu ứng đuôi hội thoại */
+  background: var(--gradient-brand);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 16px rgba(79,142,247,0.25);
 }
 
-/* Style riêng cho bong bóng của BOT */
 .bot-message .bubble {
-    background: #e2e8f0; /* Màu xám sáng */
-    color: #1e293b;      /* Chữ xám đen đậm dễ đọc */
-    border-bottom-left-radius: 4px;  /* Làm nhọn góc dưới bên trái */
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
+  border: 1px solid var(--border-subtle);
 }
 
-/* ==========================================================================
-   4. HIỂN THỊ NGUỒN TRÍCH DẪN (MỤC TIÊU NGÀY 7)
-   ========================================================================== */
+/* Markdown inside bot bubble */
+.bubble p { margin-bottom: 8px; }
+.bubble p:last-child { margin-bottom: 0; }
+.bubble ul, .bubble ol { padding-left: 20px; margin-bottom: 8px; }
+.bubble li { margin-bottom: 4px; }
+.bubble code {
+  background: rgba(255,255,255,0.08); border-radius: 4px;
+  padding: 1px 6px; font-size: 0.85em; font-family: 'Courier New', monospace;
+}
+.bubble pre {
+  background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px 16px;
+  overflow-x: auto; margin: 8px 0;
+}
+.bubble pre code { background: none; padding: 0; }
+.bubble strong { color: var(--accent-hover); }
+.bubble h1,.bubble h2,.bubble h3 { margin: 12px 0 6px; color: var(--accent-primary); }
+
+/* Sources Box */
 .sources-box {
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid #cbd5e1; /* Đường gạch ngang mảnh phân chia câu trả lời và nguồn */
-    font-size: 13px;
-    color: #64748b; /* Chữ màu nhạt hơn để không bị rối mắt */
+  margin-top: 10px; padding: 12px 16px;
+  background: rgba(79,142,247,0.06);
+  border: 1px solid rgba(79,142,247,0.2);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+}
+.sources-title { font-weight: 600; color: var(--accent-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.source-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 0; color: var(--text-secondary);
+}
+.source-item i { color: var(--accent-primary); font-size: 11px; }
+
+.msg-time { font-size: 0.7rem; color: var(--text-muted); }
+.user-message .msg-time { text-align: right; }
+
+/* Typing Indicator */
+.typing-indicator {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px 4px;
+  max-width: 840px; margin: 0 auto; width: 100%;
+  animation: fadeSlideUp 0.3s ease both;
+}
+.typing-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--gradient-brand); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.typing-dots {
+  display: flex; gap: 5px; align-items: center;
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+  border-radius: 20px; padding: 10px 14px;
+}
+.typing-dots span {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-muted);
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+.typing-text { font-size: 0.8rem; color: var(--text-muted); }
+
+/* ---------- 9. INPUT AREA ---------- */
+.input-area {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-base);
+  flex-shrink: 0;
 }
 
-.sources-box strong {
-    color: #475569;
-    display: block;
-    margin-bottom: 4px;
+.input-wrapper {
+  display: flex; align-items: flex-end; gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 10px 12px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.input-wrapper:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-/* ==========================================================================
-   5. THANH NHẬP LIỆU PHÍA DƯỚI (INPUT AREA)
-   ========================================================================== */
-.chat-input-area {
-    padding: 20px;
-    background: #ffffff;
-    border-top: 1px solid #e2e8f0;
-    display: flex;
-    gap: 12px;
-    align-items: center;
+.chat-input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text-primary); font-size: 0.92rem; line-height: 1.6;
+  resize: none; max-height: 200px; overflow-y: auto;
+  scrollbar-width: thin;
+}
+.chat-input::placeholder { color: var(--text-muted); }
+
+.input-controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.char-count { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+
+.send-btn {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  background: var(--gradient-brand); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+  box-shadow: var(--shadow-glow); flex-shrink: 0;
+}
+.send-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px) scale(1.05); }
+.send-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+
+.input-disclaimer {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; color: var(--text-muted);
+  margin-top: 8px; text-align: center; justify-content: center;
 }
 
-/* Ô nhập chữ */
-#userInput {
-    flex: 1;
-    padding: 14px 20px;
-    border: 1px solid #cbd5e1;
-    border-radius: 24px; /* Bo viền ô nhập tròn trịa như thanh tìm kiếm Google */
-    outline: none;
-    font-size: 15px;
-    transition: all 0.2s ease; /* Hiệu ứng mượt mà khi click vào */
+/* ---------- 10. TOAST ---------- */
+.toast-container {
+  position: fixed; top: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 8px; z-index: 9999;
+  max-width: 360px; width: 90%;
 }
 
-/* Khi người dùng click chuột vào ô nhập */
-#userInput:focus {
-    border-color: #2563eb; /* Đổi viền sang màu xanh */
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); /* Tỏa hào quang xanh nhẹ */
+.toast {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px; border-radius: var(--radius-md);
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  animation: toastIn 0.35s ease both;
+  font-size: 0.875rem; color: var(--text-primary);
+}
+.toast.toast-success { border-color: rgba(52,211,153,0.4); }
+.toast.toast-error   { border-color: rgba(248,113,113,0.4); }
+.toast.toast-info    { border-color: var(--border-focus); }
+.toast i { font-size: 1.1rem; flex-shrink: 0; }
+.toast-success i { color: #34d399; }
+.toast-error   i { color: #f87171; }
+.toast-info    i { color: var(--accent-primary); }
+.toast-out { animation: toastOut 0.3s ease forwards; }
+
+/* ---------- 11. MODAL ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-card {
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl); padding: 40px 36px; text-align: center;
+  max-width: 380px; width: 90%;
+  box-shadow: var(--shadow-card);
+  animation: fadeSlideUp 0.3s ease both;
+}
+.modal-icon { font-size: 2.4rem; color: #fbbf24; margin-bottom: 16px; }
+.modal-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+.modal-desc  { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 28px; line-height: 1.6; }
+.modal-actions { display: flex; gap: 12px; justify-content: center; }
+.modal-btn {
+  padding: 10px 28px; border-radius: var(--radius-md);
+  font-size: 0.9rem; font-weight: 600;
+  transition: opacity var(--transition), transform var(--transition);
+}
+.modal-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.modal-btn-cancel  { background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-secondary); }
+.modal-btn-confirm { background: #f87171; color: #fff; box-shadow: 0 4px 14px rgba(248,113,113,0.3); }
+
+/* ---------- 12. ANIMATIONS ---------- */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes typingBounce {
+  0%,60%,100% { transform: translateY(0); background: var(--text-muted); }
+  30%          { transform: translateY(-6px); background: var(--accent-primary); }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes toastOut {
+  to   { opacity: 0; transform: translateX(40px); }
 }
 
-/* Nút bấm Gửi */
-#sendBtn {
-    width: 48px;
-    height: 48px;
-    background: #2563eb;
-    color: #ffffff;
-    border: none;
-    border-radius: 50%; /* Biến nút thành hình tròn xoe */
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: background 0.2s ease;
-}
+/* ---------- 13. RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; top: 0; left: 0; height: 100%;
+    transform: translateX(-100%);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .sidebar-close-btn { display: flex; }
 
-/* Khi di chuột vào nút gửi */
-#sendBtn:hover {
-    background: #1d4ed8; /* Màu xanh đậm hơn một chút */
+  .topbar-menu-btn { display: flex; }
+
+  .suggestions-grid { grid-template-columns: 1fr; }
+
+  .msg-content { max-width: 88%; }
 }
