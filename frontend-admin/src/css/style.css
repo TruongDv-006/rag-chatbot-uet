@@ -1,0 +1,160 @@
+/* ==========================================================================
+   1. CẤU HÌNH CHUNG (RESET SYSTEM)
+   ========================================================================== */
+* {
+    box-sizing: border-box; /* Giúp tính toán kích thước ô chuẩn xác không bị tràn */
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Phông chữ hiện đại */
+}
+
+body {
+    background-color: #f4f6f9; /* Màu nền xám nhạt dịu mắt cho toàn bộ trang web */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Căn giữa khung chat theo chiều dọc màn hình */
+}
+
+/* ==========================================================================
+   2. KHUNG CHAT CHÍNH (CHAT CONTAINER)
+   ========================================================================== */
+.chat-container {
+    width: 100%;
+    max-width: 850px; /* Độ rộng tối đa chuẩn cho một khung chat máy tính */
+    height: 90vh;      /* Chiều cao chiếm 90% màn hình */
+    background: #ffffff;
+    border-radius: 16px; /* Bo tròn các góc lớn nhìn rất mềm mại */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ phía sau tạo độ nổi */
+    display: flex;
+    flex-direction: column; /* Xếp Header, Nội dung và Input theo chiều dọc */
+    overflow: hidden;
+}
+
+/* Thanh tiêu đề trên cùng */
+.chat-header {
+    padding: 20px;
+    background: #1e3a8a; /* Màu xanh đậm thương hiệu (giống màu đặc trưng của Bách Khoa/UET) */
+    color: #ffffff;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   3. VÙNG HIỂN THỊ TIN NHẮN (CHAT BOX)
+   ========================================================================== */
+.chat-box {
+    flex: 1; /* Tự động co giãn chiếm toàn bộ không gian trống ở giữa */
+    padding: 25px;
+    overflow-y: auto; /* Tự động hiện thanh cuộn dọc khi tin nhắn quá dài */
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Khoảng cách giữa các dòng tin nhắn */
+    background-color: #fafafa;
+}
+
+/* Định dạng cấu trúc chung của một dòng tin nhắn */
+.message {
+    display: flex;
+    width: 100%;
+}
+
+/* Nếu là tin nhắn của Người dùng: Đẩy sang bên PHẢI */
+.user-message {
+    justify-content: flex-end;
+}
+
+/* Nếu là tin nhắn của Bot: Đẩy sang bên TRÁI */
+.bot-message {
+    justify-content: flex-start;
+}
+
+/* Bong bóng chứa nội dung chữ */
+.bubble {
+    max-width: 70%; /* Không cho tin nhắn dài quá 70% chiều rộng khung chat */
+    padding: 14px 18px;
+    border-radius: 18px;
+    line-height: 1.5;
+    font-size: 15px;
+    word-wrap: break-word; /* Tự động xuống dòng khi gặp từ quá dài */
+}
+
+/* Style riêng cho bong bóng của USER */
+.user-message .bubble {
+    background: #2563eb; /* Màu xanh rực rỡ */
+    color: #ffffff;
+    border-bottom-right-radius: 4px; /* Làm nhọn góc dưới bên phải tạo hiệu ứng đuôi hội thoại */
+}
+
+/* Style riêng cho bong bóng của BOT */
+.bot-message .bubble {
+    background: #e2e8f0; /* Màu xám sáng */
+    color: #1e293b;      /* Chữ xám đen đậm dễ đọc */
+    border-bottom-left-radius: 4px;  /* Làm nhọn góc dưới bên trái */
+}
+
+/* ==========================================================================
+   4. HIỂN THỊ NGUỒN TRÍCH DẪN (MỤC TIÊU NGÀY 7)
+   ========================================================================== */
+.sources-box {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #cbd5e1; /* Đường gạch ngang mảnh phân chia câu trả lời và nguồn */
+    font-size: 13px;
+    color: #64748b; /* Chữ màu nhạt hơn để không bị rối mắt */
+}
+
+.sources-box strong {
+    color: #475569;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* ==========================================================================
+   5. THANH NHẬP LIỆU PHÍA DƯỚI (INPUT AREA)
+   ========================================================================== */
+.chat-input-area {
+    padding: 20px;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Ô nhập chữ */
+#userInput {
+    flex: 1;
+    padding: 14px 20px;
+    border: 1px solid #cbd5e1;
+    border-radius: 24px; /* Bo viền ô nhập tròn trịa như thanh tìm kiếm Google */
+    outline: none;
+    font-size: 15px;
+    transition: all 0.2s ease; /* Hiệu ứng mượt mà khi click vào */
+}
+
+/* Khi người dùng click chuột vào ô nhập */
+#userInput:focus {
+    border-color: #2563eb; /* Đổi viền sang màu xanh */
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); /* Tỏa hào quang xanh nhẹ */
+}
+
+/* Nút bấm Gửi */
+#sendBtn {
+    width: 48px;
+    height: 48px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 50%; /* Biến nút thành hình tròn xoe */
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+/* Khi di chuột vào nút gửi */
+#sendBtn:hover {
+    background: #1d4ed8; /* Màu xanh đậm hơn một chút */
+}
