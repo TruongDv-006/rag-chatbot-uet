@@ -1,10 +1,10 @@
-#
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import chat, admin # pyrefly: ignore
 from app.core.database import engine, Base # pyrefly: ignore
 from app.models.user import User # pyrefly: ignore
 from app.models.chat import ChatSession, ChatMessage # pyrefly:ignore
+from app.routes.auth import router as auth_router # pyrefly: ignore
 
 # Quét tất cả engine thiết kế và tự động xây bảng dưới Postgres nếu chưa có
 Base.metadata.create_all(bind=engine)
@@ -21,8 +21,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(chat.router, prefix = "/api/v1")
-app.include_router(admin.router, prefix = "/app/v1/admin")
+app.include_router(chat.router, prefix = "/api/v1", tags = ["Phòng chat sinh viên"])
+app.include_router(admin.router, prefix = "/app/v1/admin", tags=["Trang chủ Admin"])
+app.include_router(auth_router, prefix = "/app/v1/auth", tags = ["Xác thực và Bảo mật"])
 
 @app.get("/")
 def heath_check():
