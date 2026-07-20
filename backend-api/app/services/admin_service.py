@@ -21,6 +21,13 @@ class AdminService:
 
         return task.id
 
+###### Cần cài thêm cái tài khoản admin mặc định
+
+
+
+
+
+
 
 # # app/routes/chat.py
 # from fastapi import APIRouter, Depends

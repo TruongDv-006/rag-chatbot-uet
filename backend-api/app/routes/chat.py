@@ -20,3 +20,7 @@ def chat_with_rag(request: ChatRequest, service: ChatService=Depends(get_chat_se
         username=current_user,
         session_id=request.session_id
     )
+
+
+
+##### Sau này mở rộng ra thêm phần xử lý Session, Message lưu trữ ####
