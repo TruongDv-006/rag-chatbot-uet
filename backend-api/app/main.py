@@ -22,8 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(chat.router, prefix = "/api/v1", tags = ["Phòng chat sinh viên"])
-app.include_router(admin.router, prefix = "/app/v1/admin", tags=["Trang chủ Admin"])
-app.include_router(auth_router, prefix = "/app/v1/auth", tags = ["Xác thực và Bảo mật"])
+app.include_router(admin.router, prefix = "/api/v1/admin", tags=["Trang chủ Admin"])
+app.include_router(auth_router, prefix = "/api/v1/auth", tags = ["Xác thực và Bảo mật"])
 
 @app.get("/")
 def heath_check():
