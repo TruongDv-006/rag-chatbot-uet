@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session # pyrefly:ignore
 from app.models.user import User # pyrefly: ignore 
-from app.untils.security import get_password_hash, verify_password, create_access_token # pyrefly: ignore
+from app.utils.security import get_password_hash, verify_password, create_access_token # pyrefly: ignore
 
 
 class AuthService:
