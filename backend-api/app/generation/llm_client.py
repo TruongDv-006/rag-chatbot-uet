@@ -1,5 +1,3 @@
-# Interface và các class con kết nối đến Ollama/vLLM (Strategy Pattern)
-from typing import override
 from abc import ABC, abstractmethod
 from openai import OpenAI
 from app.generation.config import generation_config # pyrefly: ignore [missing-import]

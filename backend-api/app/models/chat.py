@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text # pyrefly:ignore
-from sqlalchemy import relationship # pyrefly:ignore
+from sqlalchemy.orm import relationship # pyrefly:ignore
 from app.core.database import Base # pyrefly:ignore
 
 class ChatSession(Base):
@@ -9,7 +9,7 @@ class ChatSession(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable = False, default= "Đoạn chat mới")
     created_at = Column(DateTime, default = lambda: datetime.now(timezone.utc))
-    user_id = Colume(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
 
 class ChatMessage(Base):
