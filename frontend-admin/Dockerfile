@@ -6,7 +6,7 @@ RUN rm -rf /usr/share/nginx/html/*
 
 # Bản chất code Vanilla JS của bạn đang nằm trực tiếp ở thư mục hiện tại
 # Copy toàn bộ file tĩnh (index.html, css/, js/) vào thư mục phục vụ của Nginx
-COPY . /usr/share/nginx/html
+COPY ./src /usr/share/nginx/html
 
 # Expose port 80 - cổng chạy mặc định của web server Nginx bên trong container
 EXPOSE 80
