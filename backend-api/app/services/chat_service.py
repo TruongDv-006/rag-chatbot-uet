@@ -15,7 +15,7 @@ class ChatService:
 
         self.qdrant_client = QdrantClient(url=qdrant_url)
         self.collection_name = "uet_handbook"
-        self.embed_model = "bge-m3"
+        self.embed_model = "BAAI/bge-m3"
         self.llm_url = os.getenv("LLM_API_BASE","http://ollama:11434/api")
 
         self.retriever = HybridRetrieve(
