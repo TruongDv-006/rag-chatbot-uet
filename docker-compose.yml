@@ -68,8 +68,10 @@ services:
       - QDRANT_URL=http://qdrant_db:6333
       - REDIS_URL=redis://redis_broker:6379/0
       - MINIO_URL=http://minio_storage:9000
+      - PYTHONPATH=/
     volumes:
       - ./worker:/app
+      - ./infrastructure:/infrastructure
     depends_on:
       - postgres_db
       - qdrant_db
@@ -86,6 +88,8 @@ services:
     restart: unless-stopped
     ports:
       - "5000:80"
+    volumes:
+      - ./frontend-login/src:/usr/share/nginx/html:ro
     depends_on:
       - backend-api
     networks:
@@ -98,6 +102,8 @@ services:
     restart: unless-stopped
     ports:
       - "4000:80"
+    volumes:
+      - ./frontend-user/src:/usr/share/nginx/html:ro
     depends_on:
       - backend-api
     networks:
@@ -110,11 +116,13 @@ services:
     restart: unless-stopped
     ports:
       - "4001:80"
+    volumes:
+      - ./frontend-admin/src:/usr/share/nginx/html:ro
     depends_on:
       - backend-api
     networks:
       - rag_network
-  
+
   nginx_gateway:
     image: nginx:alpine
     container_name: uet_nginx
@@ -155,6 +163,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend-api:/app
+      - ./infrastructure:/infrastructure
     depends_on:
       - ollama
       - postgres_db
