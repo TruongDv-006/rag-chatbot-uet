@@ -44,7 +44,7 @@ export class ApiService {
             };
             xhr.onload = () => {
                 if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(JSON.parse(xhr.responseText));
+                   resolve(JSON.parse(xhr.responseText));
                 } else {
                     try { reject(new Error(JSON.parse(xhr.responseText).detail ?? 'Upload thất bại')); }
                     catch { reject(new Error('Upload thất bại')); }
@@ -68,8 +68,8 @@ export class ApiService {
     }
 
     /** Xóa tài liệu */
-    async deleteDocument(docId) {
-        const res = await fetch(`${this.baseUrl}/admin/documents/${docId}`, {
+    async deleteDocument(docName) {
+        const res = await fetch(`${this.baseUrl}/admin/documents/${encodeURIComponent(docName)}`, {
             method: 'DELETE', headers: this._headers()
         });
         return this._json(res);

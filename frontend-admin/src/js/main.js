@@ -260,7 +260,7 @@ class AdminController {
         );
         if (!ok) return;
         try {
-            await this.api.deleteDocument(docId);
+            await this.api.deleteDocument(docName);
             this.toast.success(`Đã xóa tài liệu "${docName}"`);
             this._loadDocuments();
         } catch (err) {
@@ -271,9 +271,12 @@ class AdminController {
     /* ==========================================================
        LOGOUT
     ========================================================== */
-    _confirmLogout() {
-        this.auth.clearToken();
-        this.auth.redirectToLogin();
+    async _confirmLogout() {
+        const ok = await this.view.showConfirm('Đăng xuất', 'Bạn có muốn đăng xuất không?');
+        if (ok) {
+            this.auth.clearToken();
+            this.auth.redirectToLogin();
+        }
     }
 
     /* ==========================================================

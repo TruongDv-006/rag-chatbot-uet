@@ -90,9 +90,33 @@ class AppController {
     async _loadSessions() {
         try {
             this.sessions = await this.api.getSessions();
-            this.view.renderSessions(this.sessions, this.currentSessionId, (id) => this._loadSession(id));
+            this.view.renderSessions(
+                this.sessions,
+                this.currentSessionId,
+                (id) => this._loadSession(id),
+                (id) => this._deleteSession(id)
+            );
         } catch (err) {
             this.toast.error('Không thể tải lịch sử hội thoại.');
+        }
+    }
+
+    async _deleteSession(sessionId) {
+        const ok = await this.view.showConfirm(
+            'Xóa cuộc trò chuyện',
+            'Bạn có chắc muốn xóa vĩnh viễn cuộc trò chuyện này?'
+        );
+        if (!ok) return;
+
+        try {
+            await this.api.deleteSession(sessionId);
+            this.toast.success('Đã xóa cuộc trò chuyện!');
+            if (this.currentSessionId === sessionId) {
+                this._startNewChat();
+            }
+            await this._loadSessions();
+        } catch (err) {
+            this.toast.error(`Xóa thất bại: ${err.message}`);
         }
     }
 
@@ -191,9 +215,12 @@ class AppController {
         if (ok) this._startNewChat();
     }
 
-    _confirmLogout() {
-        this.auth.clearToken();
-        this.auth.redirectToLogin();
+    async _confirmLogout() {
+        const ok = await this.view.showConfirm('Đăng xuất', 'Bạn có muốn đăng xuất không?');
+        if (ok) {
+            this.auth.clearToken();
+            this.auth.redirectToLogin();
+        }
     }
 }
 

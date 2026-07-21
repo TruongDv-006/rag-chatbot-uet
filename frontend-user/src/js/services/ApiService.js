@@ -66,4 +66,15 @@ export class ApiService {
         });
         return this._handleResponse(res);
     }
+
+    /**
+     * DELETE /sessions/{id} – Xóa 1 phiên trò chuyện
+     */
+    async deleteSession(sessionId) {
+        const res = await fetch(`${this.baseUrl}/sessions/${sessionId}`, {
+            method: 'DELETE',
+            headers: this._headers(),
+        });
+        return this._handleResponse(res);
+    }
 }

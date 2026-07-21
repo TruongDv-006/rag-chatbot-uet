@@ -194,6 +194,22 @@ textarea { font-family: var(--font); }
 .session-title { font-size: 0.84rem; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .session-meta  { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
 
+.delete-session-btn {
+  opacity: 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition), color var(--transition), background var(--transition);
+}
+.session-item:hover .delete-session-btn {
+  opacity: 1;
+}
+.delete-session-btn:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
+}
+
 /* Sidebar Footer */
 .sidebar-footer {
   display: flex; align-items: center; gap: 10px;

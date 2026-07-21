@@ -62,7 +62,7 @@ export class ChatView {
     }
 
     /** Render danh sách sessions vào sidebar */
-    renderSessions(sessions, activeId, onSelect) {
+    renderSessions(sessions, activeId, onSelect, onDelete) {
         if (!sessions || sessions.length === 0) {
             this.sessionsList.innerHTML = `
                 <div class="sessions-empty">
@@ -78,10 +78,20 @@ export class ChatView {
                     <div class="session-title">${this._escapeHtml(s.title ?? 'Cuộc trò chuyện')}</div>
                     <div class="session-meta">${this._formatDate(s.created_at)}</div>
                 </div>
+                <button class="delete-session-btn" title="Xóa cuộc trò chuyện" data-id="${s.id}">
+                    <i class="fas fa-trash-can"></i>
+                </button>
             </div>`).join('');
 
         this.sessionsList.querySelectorAll('.session-item').forEach(el => {
             el.addEventListener('click', () => onSelect(Number(el.dataset.id)));
+        });
+
+        this.sessionsList.querySelectorAll('.delete-session-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (onDelete) onDelete(Number(btn.dataset.id));
+            });
         });
     }
 

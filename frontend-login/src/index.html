@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=1.0.6">
 </head>
 <body>
 
@@ -140,23 +140,22 @@
                     <span class="field-error" id="rg-fullname-err"></span>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group" id="rg-username-group">
-                        <label for="rgUsername">Tên đăng nhập</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-user input-icon"></i>
-                            <input type="text" id="rgUsername" name="username" placeholder="vd: nguyenvana" required>
-                        </div>
-                        <span class="field-error" id="rg-username-err"></span>
+                <div class="form-group" id="rg-username-group">
+                    <label for="rgUsername">Tên đăng nhập</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="rgUsername" name="username" placeholder="vd: nguyenvana" required>
                     </div>
-                    <div class="form-group" id="rg-email-group">
-                        <label for="rgEmail">Email</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="rgEmail" name="email" placeholder="vd@uet.vnu.edu.vn" required>
-                        </div>
-                        <span class="field-error" id="rg-email-err"></span>
+                    <span class="field-error" id="rg-username-err"></span>
+                </div>
+
+                <div class="form-group" id="rg-email-group">
+                    <label for="rgEmail">Email</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="rgEmail" name="email" placeholder="vd@uet.vnu.edu.vn" required>
                     </div>
+                    <span class="field-error" id="rg-email-err"></span>
                 </div>
 
                 <div class="form-group" id="rg-password-group">
@@ -180,6 +179,18 @@
                     </div>
                 </div>
 
+                <div class="form-group" id="rg-confirm-password-group">
+                    <label for="rgConfirmPassword">Nhập lại mật khẩu</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-key input-icon"></i>
+                        <input type="password" id="rgConfirmPassword" name="confirm_password" placeholder="Nhập lại mật khẩu để xác nhận" required>
+                        <button type="button" class="toggle-pass" data-target="rgConfirmPassword" tabindex="-1">
+                            <i class="fas fa-eye-slash"></i>
+                        </button>
+                    </div>
+                    <span class="field-error" id="rg-confirm-password-err"></span>
+                </div>
+
                 <div id="registerAlert" class="alert-box hidden"></div>
 
                 <button type="submit" class="submit-btn" id="registerBtn">
@@ -198,6 +209,6 @@
 <!-- Toast -->
 <div id="toastContainer" class="toast-container"></div>
 
-<script type="module" src="js/app.js?v=1.0.3"></script>
+<script type="module" src="js/app.js?v=1.0.7"></script>
 </body>
 </html>

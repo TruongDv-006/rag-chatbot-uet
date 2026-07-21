@@ -126,8 +126,25 @@ function redirectByRole(token) {
 }
 
 /* ============================================================
-   API CALLS
+   API CALLS & ERROR FORMATTING
 ============================================================ */
+function formatApiError(detail, status) {
+    if (!detail) return `Lỗi ${status}`;
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail)) {
+        return detail.map(err => {
+            const field = err.loc ? err.loc[err.loc.length - 1] : '';
+            const msg = err.msg || 'Dữ liệu không hợp lệ';
+            if (msg.includes('value is not a valid email address')) return 'Email không đúng định dạng';
+            return field ? `${field}: ${msg}` : msg;
+        }).join('; ');
+    }
+    if (typeof detail === 'object') {
+        return detail.msg || detail.message || JSON.stringify(detail);
+    }
+    return String(detail);
+}
+
 async function apiLogin(username, password) {
     const res = await fetch(`${CONFIG.API_BASE}/auth/login`, {
         method:  'POST',
@@ -135,7 +152,7 @@ async function apiLogin(username, password) {
         body:    JSON.stringify({ username, password }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail ?? `Lỗi ${res.status}`);
+    if (!res.ok) throw new Error(formatApiError(data.detail, res.status));
     return data.access_token;
 }
 
@@ -146,7 +163,7 @@ async function apiRegister(payload) {
         body:    JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail ?? `Lỗi ${res.status}`);
+    if (!res.ok) throw new Error(formatApiError(data.detail, res.status));
     return data;
 }
 
@@ -165,13 +182,22 @@ function validateLogin(username, password) {
 
 function validateRegister(data) {
     let ok = true;
-    clearErrors('rg-fullname-group', 'rg-username-group', 'rg-email-group', 'rg-password-group');
-    clearFieldErrors('rg-fullname-err', 'rg-username-err', 'rg-email-err', 'rg-password-err');
+    clearErrors('rg-fullname-group', 'rg-username-group', 'rg-email-group', 'rg-password-group', 'rg-confirm-password-group');
+    clearFieldErrors('rg-fullname-err', 'rg-username-err', 'rg-email-err', 'rg-password-err', 'rg-confirm-password-err');
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!data.full_name.trim()) { markError('rg-fullname-group', 'rg-fullname-err', 'Vui lòng nhập họ và tên'); ok = false; }
     if (!data.username.trim())  { markError('rg-username-group', 'rg-username-err', 'Vui lòng nhập tên đăng nhập'); ok = false; }
-    if (!data.email.includes('@')) { markError('rg-email-group', 'rg-email-err', 'Email không hợp lệ'); ok = false; }
+    if (!emailRegex.test(data.email.trim())) { markError('rg-email-group', 'rg-email-err', 'Email không hợp lệ (ví dụ: name@example.com)'); ok = false; }
     if (data.password.length < 8) { markError('rg-password-group', 'rg-password-err', 'Mật khẩu ít nhất 8 ký tự'); ok = false; }
+    if (!data.confirm_password) {
+        markError('rg-confirm-password-group', 'rg-confirm-password-err', 'Vui lòng nhập lại mật khẩu');
+        ok = false;
+    } else if (data.password !== data.confirm_password) {
+        markError('rg-confirm-password-group', 'rg-confirm-password-err', 'Mật khẩu nhập lại không khớp');
+        ok = false;
+    }
     return ok;
 }
 
@@ -283,10 +309,11 @@ async function handleRegister(e) {
     e.preventDefault();
 
     const data = {
-        full_name: document.getElementById('rgFullname').value.trim(),
-        username:  document.getElementById('rgUsername').value.trim(),
-        email:     document.getElementById('rgEmail').value.trim(),
-        password:  document.getElementById('rgPassword').value,
+        full_name:        document.getElementById('rgFullname').value.trim(),
+        username:         document.getElementById('rgUsername').value.trim(),
+        email:            document.getElementById('rgEmail').value.trim(),
+        password:         document.getElementById('rgPassword').value,
+        confirm_password: document.getElementById('rgConfirmPassword').value,
     };
 
     if (!validateRegister(data)) return;
@@ -296,7 +323,12 @@ async function handleRegister(e) {
     hideAlert('registerAlert');
 
     try {
-        await apiRegister(data);
+        await apiRegister({
+            full_name: data.full_name,
+            username:  data.username,
+            email:     data.email,
+            password:  data.password,
+        });
 
         showAlert('registerAlert', 'Đăng ký thành công! Đang tự động đăng nhập...', 'success');
 
@@ -325,6 +357,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Password strength meter
     document.getElementById('rgPassword')?.addEventListener('input', (e) => {
         checkStrength(e.target.value);
+        const confirmVal = document.getElementById('rgConfirmPassword')?.value;
+        if (confirmVal) {
+            if (e.target.value !== confirmVal) {
+                markError('rg-confirm-password-group', 'rg-confirm-password-err', 'Mật khẩu nhập lại không khớp');
+            } else {
+                clearErrors('rg-confirm-password-group');
+                clearFieldErrors('rg-confirm-password-err');
+            }
+        }
+    });
+
+    // Realtime confirm password matching check
+    document.getElementById('rgConfirmPassword')?.addEventListener('input', (e) => {
+        const passVal = document.getElementById('rgPassword')?.value;
+        if (e.target.value && e.target.value !== passVal) {
+            markError('rg-confirm-password-group', 'rg-confirm-password-err', 'Mật khẩu nhập lại không khớp');
+        } else {
+            clearErrors('rg-confirm-password-group');
+            clearFieldErrors('rg-confirm-password-err');
+        }
     });
 
     // Luôn dọn dẹp storage cũ khi trang Login được mở
