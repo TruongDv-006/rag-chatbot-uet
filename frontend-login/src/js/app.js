@@ -14,12 +14,15 @@
 
 /* ============================================================
    CONFIG – đổi URL theo môi trường
+   - API_BASE: Login page chạy riêng (port 5000), KHÔNG qua Nginx
+     nên phải gọi thẳng backend port 8000
+   - USER_URL / ADMIN_URL: URL redirect sau khi đăng nhập thành công
 ============================================================ */
 const CONFIG = {
-    API_BASE:   '/api/v1',           // Nginx proxy → backend
-    USER_URL:   'http://localhost:3000',   // frontend-user
-    ADMIN_URL:  'http://localhost:3001',   // frontend-admin
-    TOKEN_KEY:  'uet_access_token',
+    API_BASE:  'http://localhost:8000/api/v1',  // Gọi thẳng backend
+    USER_URL:  'http://localhost:4000',          // frontend-user
+    ADMIN_URL: 'http://localhost:4001',          // frontend-admin
+    TOKEN_KEY: 'uet_access_token',
 };
 
 /* ============================================================
@@ -49,8 +52,10 @@ function decodeJwt(token) {
 }
 
 function setLoading(btn, loading) {
-    btn.querySelector('.btn-text').classList.toggle('hidden', loading);
-    btn.querySelector('.btn-spinner').classList.toggle('hidden', !loading);
+    const text    = btn.querySelector('.btn-text');
+    const spinner = btn.querySelector('.btn-spinner');
+    if (text)    text.style.display    = loading ? 'none' : 'flex';
+    if (spinner) spinner.style.display = loading ? 'flex' : 'none';
     btn.disabled = loading;
 }
 
@@ -205,22 +210,23 @@ function initTabs() {
         tabEl.classList.add('active');
         tabEl.setAttribute('aria-selected', 'true');
 
-        const rect = tabEl.getBoundingClientRect();
-        const parent = tabEl.closest('.tab-switcher').getBoundingClientRect();
-        slider.style.left  = (rect.left - parent.left + 4) + 'px'; // offset for padding
-        slider.style.width = (rect.width - 0) + 'px';
-
         const isLogin = tabEl.dataset.tab === 'login';
-        loginForm.classList.toggle('hidden', !isLogin);
-        regForm.classList.toggle('hidden', isLogin);
+        // Dùng style.display trực tiếp – đảm bảo hoạt động dù CSS có xung đột
+        loginForm.style.display = isLogin ? 'flex' : 'none';
+        regForm.style.display   = isLogin ? 'none' : 'flex';
 
-        // Clear alerts on switch
+        // Di chuyển slider đến tab đang active
+        const rect   = tabEl.getBoundingClientRect();
+        const parent = tabEl.closest('.tab-switcher').getBoundingClientRect();
+        slider.style.left  = (rect.left - parent.left) + 'px';
+        slider.style.width = rect.width + 'px';
+
         hideAlert('loginAlert'); hideAlert('registerAlert');
     }
 
     tabs.forEach(t => t.addEventListener('click', () => activate(t)));
 
-    // Initial slider position
+    // Khởi tạo vị trí slider sau khi DOM render xong
     requestAnimationFrame(() => {
         const active = document.querySelector('.tab-btn.active');
         if (active) activate(active);
@@ -313,24 +319,17 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initPasswordToggles();
 
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+    document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
+    document.getElementById('registerForm')?.addEventListener('submit', handleRegister);
 
     // Password strength meter
     document.getElementById('rgPassword')?.addEventListener('input', (e) => {
         checkStrength(e.target.value);
     });
 
-    // Nếu đã có token hợp lệ → redirect ngay
-    const existingToken = localStorage.getItem(CONFIG.TOKEN_KEY);
-    if (existingToken) {
-        try {
-            const p = decodeJwt(existingToken);
-            if (p && p.exp * 1000 > Date.now()) {
-                redirectByRole(existingToken);
-                return;
-            }
-        } catch {}
-        localStorage.removeItem(CONFIG.TOKEN_KEY);
-    }
+    // Luôn dọn dẹp storage cũ khi trang Login được mở
+    try {
+        localStorage.clear();
+        sessionStorage.clear();
+    } catch {}
 });

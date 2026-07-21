@@ -33,8 +33,7 @@ export class AuthService {
 
     /** Xóa token (đăng xuất) */
     clearToken() {
-        localStorage.removeItem(CONFIG.TOKEN_KEY);
-        localStorage.removeItem(CONFIG.USER_KEY);
+        try { localStorage.clear(); sessionStorage.clear(); } catch {}
     }
 
     /** Kiểm tra có token hợp lệ không (chưa decode, chỉ kiểm tra tồn tại & không expired) */
@@ -75,6 +74,6 @@ export class AuthService {
 
     /** Điều hướng sang trang login SSO */
     redirectToLogin() {
-        window.location.href = CONFIG.LOGIN_PAGE_URL;
+        window.location.href = `${CONFIG.LOGIN_PAGE_URL}/#logout=true`;
     }
 }

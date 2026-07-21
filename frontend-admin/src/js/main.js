@@ -35,7 +35,7 @@ class AdminController {
 
         if (!this.auth.isAuthenticated()) {
             this.view.showAuthOverlay();
-            document.getElementById('goToLoginBtn').href = CONFIG.LOGIN_PAGE_URL;
+            document.getElementById('goToLoginBtn').href = `${CONFIG.LOGIN_PAGE_URL}/#logout=true`;
             return;
         }
 
@@ -271,9 +271,9 @@ class AdminController {
     /* ==========================================================
        LOGOUT
     ========================================================== */
-    async _confirmLogout() {
-        const ok = await this.view.showConfirm('Đăng xuất', 'Bạn có chắc muốn đăng xuất khỏi Admin Dashboard?');
-        if (ok) { this.auth.clearToken(); this.auth.redirectToLogin(); }
+    _confirmLogout() {
+        this.auth.clearToken();
+        this.auth.redirectToLogin();
     }
 
     /* ==========================================================

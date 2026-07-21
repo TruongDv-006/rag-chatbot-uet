@@ -95,7 +95,7 @@
                         <span class="user-role">Người dùng</span>
                     </div>
                 </div>
-                <button id="logoutBtn" class="icon-btn logout-btn" title="Đăng xuất">
+                <button id="logoutBtn" class="icon-btn logout-btn" title="Đăng xuất" onclick="try{localStorage.clear();sessionStorage.clear();}catch(e){}window.location.href='http://localhost:5000/#logout=true';">
                     <i class="fas fa-right-from-bracket"></i>
                 </button>
             </div>
@@ -225,6 +225,6 @@
     </div>
 
     <!-- Main JS (ES Module) -->
-    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/app.js?v=1.0.3"></script>
 </body>
 </html>

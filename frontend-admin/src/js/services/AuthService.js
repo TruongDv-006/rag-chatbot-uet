@@ -14,7 +14,9 @@ export class AuthService {
     }
 
     getToken()  { return localStorage.getItem(CONFIG.TOKEN_KEY); }
-    clearToken(){ localStorage.removeItem(CONFIG.TOKEN_KEY); }
+    clearToken(){
+        try { localStorage.clear(); sessionStorage.clear(); } catch {}
+    }
 
     isAuthenticated() {
         const token = this.getToken();
@@ -34,5 +36,5 @@ export class AuthService {
     getUsername() { return this.getUserInfo()?.sub  ?? 'Admin'; }
     isAdmin()     { return this.getRole() === 'admin'; }
 
-    redirectToLogin() { window.location.href = CONFIG.LOGIN_PAGE_URL; }
+    redirectToLogin() { window.location.href = `${CONFIG.LOGIN_PAGE_URL}/#logout=true`; }
 }

@@ -56,7 +56,7 @@ class AppController {
     ============================================================ */
     _showAuthWall() {
         this.view.showAuth();
-        document.getElementById('goToLoginBtn').href = CONFIG.LOGIN_PAGE_URL;
+        document.getElementById('goToLoginBtn').href = `${CONFIG.LOGIN_PAGE_URL}/#logout=true`;
     }
 
     /* ============================================================
@@ -191,15 +191,9 @@ class AppController {
         if (ok) this._startNewChat();
     }
 
-    async _confirmLogout() {
-        const ok = await this.view.showConfirm(
-            'Đăng xuất',
-            'Bạn có chắc muốn đăng xuất khỏi UET RAG Chatbot?'
-        );
-        if (ok) {
-            this.auth.clearToken();
-            this.auth.redirectToLogin();
-        }
+    _confirmLogout() {
+        this.auth.clearToken();
+        this.auth.redirectToLogin();
     }
 }
 

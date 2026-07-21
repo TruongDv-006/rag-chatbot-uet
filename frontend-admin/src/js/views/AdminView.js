@@ -212,8 +212,13 @@ export class AdminView {
     }
 
     /* ======= UPLOAD MODAL ======= */
-    openUploadModal()  { this.uploadModal.classList.remove('hidden'); }
-    closeUploadModal() { this.uploadModal.classList.add('hidden'); this.clearFileQueue(); }
+    openUploadModal()  {
+        this.uploadModal.classList.remove('hidden');
+    }
+    closeUploadModal() {
+        this.uploadModal.classList.add('hidden');
+        this.clearFileQueue();
+    }
 
     /** Thêm file vào queue UI, trả về item element để cập nhật progress */
     addFileToQueue(file) {
@@ -255,7 +260,10 @@ export class AdminView {
             this.confirmTitle.textContent = title;
             this.confirmDesc.textContent  = desc;
             this.confirmModal.classList.remove('hidden');
-            const close = (r) => { this.confirmModal.classList.add('hidden'); resolve(r); };
+            const close = (r) => {
+                this.confirmModal.classList.add('hidden');
+                resolve(r);
+            };
             this.confirmOkBtn.onclick     = () => close(true);
             this.confirmCancelBtn.onclick = () => close(false);
         });

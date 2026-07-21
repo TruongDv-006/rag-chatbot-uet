@@ -29,6 +29,9 @@
   --font: 'Inter', system-ui, sans-serif;
 }
 
+/* Global hidden utility */
+.hidden { display: none !important; }
+
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 html { font-size:15px; }
 body {
@@ -116,6 +119,7 @@ body {
   padding:36px 40px;
   box-shadow: 0 24px 64px rgba(0,0,0,0.45);
   animation: slideInRight 0.5s cubic-bezier(0.4,0,0.2,1) both;
+  overflow: hidden;
 }
 
 /* ---- TAB SWITCHER ---- */
@@ -138,6 +142,7 @@ body {
   border:1px solid var(--border-f);
   border-radius:6px;
   transition:left var(--ease), width var(--ease);
+  z-index: 0; /* tab-btn (z-index:1) phủ lên trên slider */
 }
 
 /* ---- FORM HEADER ---- */
