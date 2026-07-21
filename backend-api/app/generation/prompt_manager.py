@@ -1,6 +1,5 @@
 # Class chuyên trách đóng gói và quản lý Prompt Template
 
-from functorch.dim import index
 class PromptManager:
     """
     Class này đảm nhận nhiệm vụ quản lý và thiết kế cấu trúc câu lệnh Prompt
@@ -24,21 +23,21 @@ class PromptManager:
             "3. Không bịa đặt thông tin và không tự tạo ra các ký hiệu tài liệu không tồn tại trong ngữ cảnh được cung cấp."
         )
 
-        def create_messages(self, retrived_docs:list[dict], query:str):
-            """
-            Đóng gói ngữ cảnh(context) và Query thành 1 định dạng chuẩn
-            - retrieved_docs: Danh sách các dict tài liệu đã qua lọc điểm threshold
-            - query: Câu hỏi user gõ trên khung chat giao diện
-            """
-            context_parts = []
-            for index, doc in enumerate(retrived_docs, start=1):
-                text_content = doc.get("content","")
-                context_parts.append(f"[Tài liệu {index}: {text_content}]")
+    def create_messages(self, retrieved_docs: list[dict], query: str):
+        """
+        Đóng gói ngữ cảnh(context) và Query thành 1 định dạng chuẩn
+        - retrieved_docs: Danh sách các dict tài liệu đã qua lọc điểm threshold
+        - query: Câu hỏi user gõ trên khung chat giao diện
+        """
+        context_parts = []
+        for i, doc in enumerate(retrieved_docs, start=1):
+            text_content = doc.get("content", "")
+            context_parts.append(f"[Tài liệu {i}: {text_content}]")
 
             formatted_context = "\n\n".join(context_parts)
             full_system_prompt = f"{self._system_template}\n\nNgữ cảnh(context):\n{formatted_context}"
 
-            return [
-                {"role": "system", "content": full_system_prompt},
-                {"role": "user", "content": query}
-            ]
+        return [
+            {"role": "system", "content": full_system_prompt},
+            {"role": "user", "content": query}
+        ]
