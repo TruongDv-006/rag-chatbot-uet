@@ -48,3 +48,16 @@ def get_messages_of_session(
         raise HTTPException(status_code=403, detail=result["error"])
 
     return result
+
+@router.delete("/sessions/{session_id}")
+def delete_chat_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+    service: ChatService = Depends(get_chat_service),
+    current_user: str = Depends(get_current_user)
+):
+    """Xóa một phiên trò chuyện cũ"""
+    result = service.delete_session(db=db, username=current_user, session_id=session_id)
+    if isinstance(result, dict) and "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result

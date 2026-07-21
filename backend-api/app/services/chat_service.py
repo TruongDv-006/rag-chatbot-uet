@@ -29,13 +29,14 @@ class ChatService:
 
 
     def _get_embedding(self, text:str):
-        embed_url = f"{self.llm_client}/embeddings"
-
-        response = requests.post(embed_url, json={
-            "model" : self.embed_model,
-            "prompt": text
-        })
-        return response.json().get("embedding",[])
+        try:
+            url = f"{self.llm_url}/embeddings"
+            res = requests.post(url, json={"model": self.embed_model, "prompt": text}, timeout=3)
+            if res.ok:
+                return res.json().get("embedding", [])
+        except Exception as e:
+            print(f"[Embedding Warning] {e}")
+        return []
 
 
     def process_message(self,db: Session, message:str, username:str, session_id:int | None=None):
@@ -82,8 +83,8 @@ class ChatService:
                 top_k=5
             )
 
-            #
-            score_threshold = 0.6
+            # Nếu không có embedding (Qdrant chưa có dữ liệu), hạ ngưỡng để LLM vẫn được gọi
+            score_threshold = 0.0 if not query_vector else 0.3
             reply_text = self.generator.execute(
                 query = message,
                 retrieved_docs=retrieved_docs,
@@ -112,7 +113,7 @@ class ChatService:
             }
         except Exception as e:
             db.rollback()
-            return {"rely":"Hệ thống đang gặp lỗi sự cố: {str(e)}", "source":[]}
+            return {"reply": f"Hệ thống đang gặp sự cố: {str(e)}", "source": {}}
 
 
     def get_user_sessions(self, db:Session, username:str):
@@ -124,11 +125,11 @@ class ChatService:
 
         sessions = db.query(ChatSession).filter(
             ChatSession.user_id==user.id
-        ).order_by(ChatSession.created_at.desc().all())
+        ).order_by(ChatSession.created_at.desc()).all()
 
         return [
             {
-                "session_id": s.id,
+                "id": s.id,
                 "title": s.title,
                 "created_at": s.created_at.isoformat()
             }
@@ -166,6 +167,25 @@ class ChatService:
             }
             for m in messages
         ]
+
+    def delete_session(self, db: Session, username: str, session_id: int):
+        """Xóa một phiên trò chuyện của người dùng"""
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            return {"error": "Không tìm thấy người dùng"}
+
+        session = db.query(ChatSession).filter(
+            ChatSession.id == session_id,
+            ChatSession.user_id == user.id
+        ).first()
+
+        if not session:
+            return {"error": "Không tìm thấy phiên trò chuyện"}
+
+        db.delete(session)
+        db.commit()
+        return {"message": f"Đã xóa phiên trò chuyện thành công"}
+
 
 
 
