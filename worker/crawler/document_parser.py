@@ -36,8 +36,8 @@ class DocumentParser:
         # 4. Dọn dẹp khoảng trắng thừa
         cleaned = re.sub(r'[ \t]+', ' ', cleaned)
         return cleaned.strip()
-    @staticmethod
-    def parse_pdf(self,file_path):
+    @classmethod
+    def parse_pdf(cls, file_path):
         """Trích xuất chữ từ file PDF
         """
         text_content = ""
@@ -46,7 +46,7 @@ class DocumentParser:
             with pdfplumber.open(file_path) as pdf:
                 for page in pdf.pages:
                     extracted = page.extract_text()
-                    if extracted.strip():
+                    if extracted and extracted.strip():
                         text_content += extracted + "\n"
             #Nếu là file pdf scan chuỗi sẽ về rỗng vì vậy dùng OCR tại đây
             if not text_content.strip():
@@ -58,7 +58,7 @@ class DocumentParser:
                     if ocr_text:
                         text_content = text_content + ocr_text + "\n"
 
-            final_text = self.clean_pdf_text(text_content)
+            final_text = cls.clean_pdf_text(text_content)
             
             return final_text
         except Exception as e:
@@ -93,7 +93,7 @@ class DocumentParser:
             content = ""
 
             if(filename.lower().endswith('.pdf')):
-                content = self.parse_pdf(self, file_path)
+                content = self.parse_pdf(file_path)
             elif (filename.lower().endswith('.docx')):
                 content = self.parse_docx(file_path)
             else:
