@@ -65,14 +65,11 @@ class AppController {
     _bindEvents() {
         // Sidebar toggle (mobile)
         document.getElementById('openSidebarBtn').addEventListener('click', () => this.view.openSidebar());
-        document.getElementById('closeSidebarBtn').addEventListener('click', () => this.view.closeSidebar());
         document.getElementById('sidebarOverlay').addEventListener('click', () => this.view.closeSidebar());
 
         // New chat
         document.getElementById('newChatBtn').addEventListener('click', () => this._startNewChat());
 
-        // Clear chat
-        document.getElementById('clearChatBtn').addEventListener('click', () => this._confirmClearChat());
 
         // Logout
         document.getElementById('logoutBtn').addEventListener('click', () => this._confirmLogout());
@@ -201,18 +198,6 @@ class AppController {
         input.value = question;
         input.dispatchEvent(new Event('input'));
         this._handleSend();
-    }
-
-    /* ============================================================
-       CLEAR / LOGOUT
-    ============================================================ */
-    async _confirmClearChat() {
-        if (!this.currentSessionId && this.view.chatBox.children.length === 0) return;
-        const ok = await this.view.showConfirm(
-            'Xoá cuộc trò chuyện',
-            'Thao tác này sẽ xoá toàn bộ tin nhắn trên màn hình. Bạn có muốn tiếp tục?'
-        );
-        if (ok) this._startNewChat();
     }
 
     async _confirmLogout() {

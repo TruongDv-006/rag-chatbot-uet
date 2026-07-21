@@ -105,6 +105,15 @@ class AdminController {
         document.getElementById('userSearchInput')?.addEventListener('input', () => this._filterUserTable());
         document.getElementById('roleFilter')?.addEventListener('change', () => this._filterUserTable());
 
+        // User detail modal close
+        document.getElementById('closeUserDetailModalBtn')?.addEventListener('click', () => this.view.closeUserDetailModal());
+        document.getElementById('closeUserDetailBtn')?.addEventListener('click', () => this.view.closeUserDetailModal());
+
+        // Edit user modal events
+        document.getElementById('closeEditUserModalBtn')?.addEventListener('click', () => this.view.closeEditUserModal());
+        document.getElementById('cancelEditUserBtn')?.addEventListener('click', () => this.view.closeEditUserModal());
+        document.getElementById('editUserForm')?.addEventListener('submit', (e) => this._saveEditUser(e));
+
         // Refresh tasks
         document.getElementById('refreshTasksBtn')?.addEventListener('click', () => this._loadTasks());
     }
@@ -155,17 +164,71 @@ class AdminController {
         this.view.usersTableBody.innerHTML = `<tr><td colspan="7" class="table-loading"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>`;
         try {
             this._allUsers = await this.api.getUsers();
-            this.view.renderUsers(this._allUsers);
+            this._renderUserTable();
         } catch (err) {
             this._handleApiError(err, 'Không tải được danh sách người dùng');
             this.view.usersTableBody.innerHTML = `<tr><td colspan="7" class="table-loading">Không thể tải dữ liệu.</td></tr>`;
         }
     }
 
-    _filterUserTable() {
+    _renderUserTable() {
         const q    = document.getElementById('userSearchInput')?.value ?? '';
         const role = document.getElementById('roleFilter')?.value ?? '';
-        this.view.renderUsers(this._allUsers, q, role);
+        this.view.renderUsers(
+            this._allUsers, q, role,
+            (user) => this._showUserDetail(user),
+            (user) => this._openEditUserModal(user),
+            (user) => this._deleteUser(user)
+        );
+    }
+
+    _filterUserTable() {
+        this._renderUserTable();
+    }
+
+    _showUserDetail(user) {
+        this.view.openUserDetailModal(user);
+    }
+
+    _openEditUserModal(user) {
+        this.view.openEditUserModal(user);
+    }
+
+    async _saveEditUser(e) {
+        e.preventDefault();
+        const userId = this.view.editUserId.value;
+        const payload = {
+            full_name: this.view.editFullName.value.trim(),
+            email: this.view.editEmail.value.trim(),
+            role: this.view.editRole.value,
+        };
+        const pwd = this.view.editPassword.value.trim();
+        if (pwd) payload.password = pwd;
+
+        try {
+            const updatedUser = await this.api.updateUser(userId, payload);
+            this.toast.success(`Đã cập nhật người dùng "${updatedUser.full_name}"`);
+            this.view.closeEditUserModal();
+            await this._loadUsers();
+        } catch (err) {
+            this.toast.error(`Cập nhật thất bại: ${err.message}`);
+        }
+    }
+
+    async _deleteUser(user) {
+        const ok = await this.view.showConfirm(
+            'Xóa người dùng',
+            `Bạn có chắc chắn muốn xóa người dùng "${user.full_name ?? user.username}" (@${user.username})? Tất cả lịch sử chat của người dùng này cũng sẽ bị xóa.`
+        );
+        if (!ok) return;
+
+        try {
+            await this.api.deleteUser(user.id);
+            this.toast.success(`Đã xóa người dùng @${user.username}`);
+            await this._loadUsers();
+        } catch (err) {
+            this.toast.error(`Xóa thất bại: ${err.message}`);
+        }
     }
 
     async _loadTasks() {

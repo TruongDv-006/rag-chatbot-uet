@@ -319,6 +319,62 @@
     </div>
 </div>
 
+<!-- =====================================================================
+     USER DETAIL MODAL
+====================================================================== -->
+<div id="userDetailModal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <div class="modal-head">
+            <h3><i class="fas fa-id-card"></i> Chi tiết người dùng</h3>
+            <button class="icon-btn modal-close-btn" id="closeUserDetailModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="userDetailContent" style="padding: 1rem 0;"></div>
+        <div class="modal-foot">
+            <button class="btn-secondary" id="closeUserDetailBtn">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================
+     EDIT USER MODAL
+====================================================================== -->
+<div id="editUserModal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <div class="modal-head">
+            <h3><i class="fas fa-user-pen"></i> Chỉnh sửa người dùng</h3>
+            <button class="icon-btn modal-close-btn" id="closeEditUserModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="editUserForm">
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px; padding: 1rem 0;">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label for="editFullName" style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Họ và tên</label>
+                    <input type="text" id="editFullName" class="form-input" required style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-main); font-size:0.9rem;">
+                </div>
+                <div class="form-group">
+                    <label for="editEmail" style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Email</label>
+                    <input type="email" id="editEmail" class="form-input" required style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-main); font-size:0.9rem;">
+                </div>
+                <div class="form-group">
+                    <label for="editRole" style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Vai trò (Role)</label>
+                    <select id="editRole" class="form-input" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-main); font-size:0.9rem;">
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editPassword" style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Mật khẩu mới <span style="font-size:0.75rem; color:var(--text-muted);">(bỏ trống nếu không muốn đổi)</span></label>
+                    <input type="password" id="editPassword" class="form-input" placeholder="Nhập mật khẩu mới..." style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-main); font-size:0.9rem;">
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn-secondary" id="cancelEditUserBtn">Hủy</button>
+                <button type="submit" class="btn-primary" id="saveEditUserBtn"><i class="fas fa-save"></i> Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Toast Container -->
 <div id="toastContainer" class="toast-container"></div>
 

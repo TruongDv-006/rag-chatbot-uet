@@ -60,6 +60,23 @@ export class AdminView {
         this.confirmOkBtn    = document.getElementById('confirmOkBtn');
         this.confirmCancelBtn= document.getElementById('confirmCancelBtn');
 
+        // User Detail Modal
+        this.userDetailModal       = document.getElementById('userDetailModal');
+        this.userDetailContent     = document.getElementById('userDetailContent');
+        this.closeUserDetailModalBtn = document.getElementById('closeUserDetailModalBtn');
+        this.closeUserDetailBtn    = document.getElementById('closeUserDetailBtn');
+
+        // Edit User Modal
+        this.editUserModal         = document.getElementById('editUserModal');
+        this.editUserForm          = document.getElementById('editUserForm');
+        this.editUserId            = document.getElementById('editUserId');
+        this.editFullName          = document.getElementById('editFullName');
+        this.editEmail             = document.getElementById('editEmail');
+        this.editRole              = document.getElementById('editRole');
+        this.editPassword          = document.getElementById('editPassword');
+        this.closeEditUserModalBtn = document.getElementById('closeEditUserModalBtn');
+        this.cancelEditUserBtn     = document.getElementById('cancelEditUserBtn');
+
         this._startClock();
     }
 
@@ -148,9 +165,9 @@ export class AdminView {
     }
 
     /* ======= USERS TABLE ======= */
-    renderUsers(users, filterText='', filterRole='') {
+    renderUsers(users, filterText='', filterRole='', onDetail=null, onEdit=null, onDelete=null) {
         let list = users ?? [];
-        if (filterText) list = list.filter(u => (u.username+u.email+u.full_name).toLowerCase().includes(filterText.toLowerCase()));
+        if (filterText) list = list.filter(u => ((u.username ?? '') + (u.email ?? '') + (u.full_name ?? '')).toLowerCase().includes(filterText.toLowerCase()));
         if (filterRole) list = list.filter(u => u.role === filterRole);
 
         this.userCountPill.textContent = list.length;
@@ -176,9 +193,89 @@ export class AdminView {
                 <td>${this._fmtDate(u.created_at)}</td>
                 <td>${u.session_count ?? '–'}</td>
                 <td>
-                    <button class="tbl-btn"><i class="fas fa-eye"></i> Chi tiết</button>
+                    <div style="display:flex;gap:6px;flex-wrap:nowrap;">
+                        <button class="tbl-btn view-user-btn" data-id="${u.id}" title="Chi tiết"><i class="fas fa-eye"></i> Chi tiết</button>
+                        <button class="tbl-btn edit-user-btn" data-id="${u.id}" title="Chỉnh sửa"><i class="fas fa-pen-to-square"></i> Sửa</button>
+                        <button class="tbl-btn danger delete-user-btn" data-id="${u.id}" title="Xóa người dùng"><i class="fas fa-trash-can"></i> Xóa</button>
+                    </div>
                 </td>
             </tr>`).join('');
+
+        this.usersTableBody.querySelectorAll('.view-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const user = list.find(x => String(x.id) === String(btn.dataset.id));
+                if (user && onDetail) onDetail(user);
+            });
+        });
+
+        this.usersTableBody.querySelectorAll('.edit-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const user = list.find(x => String(x.id) === String(btn.dataset.id));
+                if (user && onEdit) onEdit(user);
+            });
+        });
+
+        this.usersTableBody.querySelectorAll('.delete-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const user = list.find(x => String(x.id) === String(btn.dataset.id));
+                if (user && onDelete) onDelete(user);
+            });
+        });
+    }
+
+    /* ======= USER MODALS ======= */
+    openUserDetailModal(user) {
+        this.userDetailContent.innerHTML = `
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px; padding:12px; background:var(--bg-sub); border-radius:12px; border:1px solid var(--border);">
+                <div class="td-avatar-icon" style="width:52px; height:52px; font-size:1.4rem; border-radius:50%; background:var(--accent-glow); color:var(--accent-light); display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;">
+                    ${(user.username ?? user.full_name ?? '?').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                    <h4 style="font-size:1.1rem; margin:0 0 4px 0; color:var(--text-main); font-weight:700;">${this._esc(user.full_name ?? user.username)}</h4>
+                    <div style="font-size:0.85rem; color:var(--text-muted);">@${this._esc(user.username)}</div>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; font-size:0.88rem;">
+                <div style="background:var(--bg-sub); padding:12px 14px; border-radius:10px; border:1px solid var(--border);">
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; font-weight:600;">ID Người dùng</div>
+                    <strong>#${user.id}</strong>
+                </div>
+                <div style="background:var(--bg-sub); padding:12px 14px; border-radius:10px; border:1px solid var(--border);">
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; font-weight:600;">Vai trò (Role)</div>
+                    ${this._roleBadge(user.role)}
+                </div>
+                <div style="background:var(--bg-sub); padding:12px 14px; border-radius:10px; border:1px solid var(--border); grid-column: span 2;">
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; font-weight:600;">Email</div>
+                    <strong style="word-break:break-all;">${this._esc(user.email ?? '–')}</strong>
+                </div>
+                <div style="background:var(--bg-sub); padding:12px 14px; border-radius:10px; border:1px solid var(--border);">
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; font-weight:600;">Ngày khởi tạo</div>
+                    <strong>${this._fmtDate(user.created_at)}</strong>
+                </div>
+                <div style="background:var(--bg-sub); padding:12px 14px; border-radius:10px; border:1px solid var(--border);">
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; font-weight:600;">Phiên hội thoại</div>
+                    <strong>${user.session_count ?? 0} phiên</strong>
+                </div>
+            </div>
+        `;
+        this.userDetailModal.classList.remove('hidden');
+    }
+
+    closeUserDetailModal() {
+        this.userDetailModal.classList.add('hidden');
+    }
+
+    openEditUserModal(user) {
+        this.editUserId.value = user.id;
+        this.editFullName.value = user.full_name ?? '';
+        this.editEmail.value = user.email ?? '';
+        this.editRole.value = user.role ?? 'student';
+        this.editPassword.value = '';
+        this.editUserModal.classList.remove('hidden');
+    }
+
+    closeEditUserModal() {
+        this.editUserModal.classList.add('hidden');
     }
 
     /* ======= TASKS ======= */

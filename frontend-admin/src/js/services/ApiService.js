@@ -81,6 +81,25 @@ export class ApiService {
         return this._json(res);
     }
 
+    /** Cập nhật thông tin người dùng */
+    async updateUser(userId, data) {
+        const res = await fetch(`${this.baseUrl}/admin/users/${userId}`, {
+            method: 'PUT',
+            headers: { ...this._headers(), 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return this._json(res);
+    }
+
+    /** Xóa người dùng */
+    async deleteUser(userId) {
+        const res = await fetch(`${this.baseUrl}/admin/users/${userId}`, {
+            method: 'DELETE',
+            headers: this._headers()
+        });
+        return this._json(res);
+    }
+
     /** Lấy danh sách tasks từ Celery/Redis */
     async getTasks() {
         const res = await fetch(`${this.baseUrl}/admin/tasks`, { headers: this._headers() });
