@@ -36,7 +36,7 @@ class DocumentProcessor:
         parser = DocumentParser()
         content = ""
         if file_name.lower().endswith(".pdf"):
-            raw_text = parser.parse_pdf(parser, file_path = file_path)
+            raw_text = parser.parse_pdf(file_path = file_path)
         elif file_name.lower().endswith(".docx"):
             raw_text = parser.parse_docx(file_path = file_path)
         else:
@@ -53,10 +53,8 @@ class DocumentProcessor:
         os.makedirs(os.path.dirname(save_path), exist_ok = True)
         with open(save_path, "w", encoding="utf-8") as f:
             f.write(raw_text)
-        file_name = parsed_filename
 
-
-        # Giai đoạn Chunking
+        # Giai đoạn Chunking (sử dụng file_name gốc để metadata source khớp với doc_name)
         chunks = master_chunk(raw_text, file_name, folder_type)
         if not chunks: 
             return False
