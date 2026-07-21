@@ -15,7 +15,8 @@ class StudentRegisterRequest(BaseModel):
     full_name: str
 
 class LoginRequest(BaseModel):
-    username:str
+    username: str
+    password: str
 
 #CỔNG TIẾP NHẬN ĐĂNG KÍ
 @router.post("/register", status_code=status.HTTP_201_CREATED)
