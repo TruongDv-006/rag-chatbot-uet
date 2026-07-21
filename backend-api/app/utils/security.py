@@ -1,24 +1,23 @@
 from datetime import datetime, timedelta, timezone
 import os
+# pyrefly: ignore [missing-import]
+import bcrypt as _bcrypt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError # pyrefly:ignore
-from passlib.context import CryptContext #pyrefly:ignore
-# Cấu hình máy băm mật khẩu bằng thuật toán "bcrypt"
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 #Các thông số cấu hình thẻ Token JWT
-SECRET_KEY=os.getenv("SECRET_KEY","scretkey")
-ALGORITHM="HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60*24*7
+SECRET_KEY = os.getenv("SECRET_KEY", "scretkey")
+ALGORITHM  = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 
-def get_password_hash(password:str):
-    """Hàm này dùng để băm mật khẩu trước khi nhét vào Postgre"""
-    return pwd_context.hash(password)
+def get_password_hash(password: str) -> str:
+    """Băm mật khẩu bằng bcrypt trực tiếp (bỏ qua passlib để tránh bug)"""
+    return _bcrypt.hashpw(password.encode("utf-8"), _bcrypt.gensalt()).decode("utf-8")
 
-def verify_password(plain_password:str, hashed_password:str):
-    """Hàm này dùng để kiểm tra xem người dùng gõ có khớp với mật khẩu đã băm hay không"""
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Kiểm tra mật khẩu có khớp hash không"""
+    return _bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 def create_access_token(data:dict):
     """Hàm in thẻ JWT Token cấp cho sinh viên khi đăng nhập thành công"""
@@ -38,7 +37,7 @@ def get_current_user(token : str = Depends(oauth2_scheme)):
     """
 
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithm=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
 
         if username is None:
@@ -56,7 +55,7 @@ def get_current_user(token : str = Depends(oauth2_scheme)):
 def get_current_admin(token: str = Depends(oauth2_scheme)):
 
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithm=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         role: str = payload.get("role")
 
