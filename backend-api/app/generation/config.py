@@ -2,8 +2,8 @@
 from pydantic_settings import BaseSettings
     
 class GenerationConfig(BaseSettings):
-    #Tên mô hình đang sử dụng
-    MODEL_NAME:str = "qwen2.5:3b"
+    #Tên mô hình đang sử dụng (dùng 1.5b để tối ưu tốc độ chạy trên CPU)
+    MODEL_NAME:str = "qwen2.5:1.5b"
 
     #Địa chỉ kết nối với Ollama trong mạng Docker
     LLM_API_BASE:str = "http://ollama:11434/v1"
@@ -18,7 +18,7 @@ class GenerationConfig(BaseSettings):
     MAX_TOKENS:int = 512
     
     #Độ sáng tạo của AI trong câu trả lời
-    TEMPERATURE:float = 0.1
+    TEMPERATURE:float = 0.15
 
     class Config:
         # Lệnh này bảo Python tự động tìm và đọc thêm các biến môi trường từ tệp .env (nếu có)
