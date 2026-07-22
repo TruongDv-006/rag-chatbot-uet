@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from qdrant_client import QdrantClient
 from app.retriever.semantic_search import SemanticRetriever # pyrefly: ignore[missing-import]
 from app.retriever.keyword_search import KeywordRetriever # pyrefly: ignore[missing-import]
@@ -21,7 +22,7 @@ class HybridRetrieve:
             documents = document
         )
         self.rank_fusion = RankFusion(k=60)
-        self.reranker = ReRanker(model_name = embed_model)
+        self.reranker = ReRanker(model_name = "BAAI/bge-reranker-base")
 
     def _scroll_all_documents_from_qdrant(self):
         """
@@ -29,23 +30,32 @@ class HybridRetrieve:
         """        
         documents = []
         next_page_offset = None
-        while True:
-            respone, next_page_offset = self.qdrant_client.scroll(
-                collection_name=self.collection_name,
-                limit=100,
-                with_payload = True,
-                with_vectors=False,
-                offset=next_page_offset
-            )
-            for point in respone:
-                payload = point.payload if point.payload else {}
-                documents.append({
-                    "doc_id": str(point.id),
-                    "content": str(payload.get("text_content","")),
-                    "source": str(payload.get("source",""))
-                })
-            if next_page_offset is None:
-                break
+        try:
+            if not self.qdrant_client.collection_exists(self.collection_name):
+                return documents
+        except Exception:
+            return documents
+
+        try:
+            while True:
+                respone, next_page_offset = self.qdrant_client.scroll(
+                    collection_name=self.collection_name,
+                    limit=100,
+                    with_payload = True,
+                    with_vectors=False,
+                    offset=next_page_offset
+                )
+                for point in respone:
+                    payload = point.payload if point.payload else {}
+                    documents.append({
+                        "doc_id": str(point.id),
+                        "content": str(payload.get("text_content","")),
+                        "source": str(payload.get("source",""))
+                    })
+                if next_page_offset is None:
+                    break
+        except Exception as e:
+            print(f"[HybridRetrieve Scroll Warning] {e}")
 
         return documents
 
