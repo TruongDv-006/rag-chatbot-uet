@@ -32,10 +32,10 @@ class PromptManager:
         context_parts = []
         for i, doc in enumerate(retrieved_docs, start=1):
             text_content = doc.get("content", "")
-            context_parts.append(f"[Tài liệu {i}: {text_content}]")
+            context_parts.append(f"[Tài liệu {i}]: {text_content}")
 
-            formatted_context = "\n\n".join(context_parts)
-            full_system_prompt = f"{self._system_template}\n\nNgữ cảnh(context):\n{formatted_context}"
+        formatted_context = "\n\n".join(context_parts) if context_parts else "Không có tài liệu."
+        full_system_prompt = f"{self._system_template}\n\nNgữ cảnh (context):\n{formatted_context}"
 
         return [
             {"role": "system", "content": full_system_prompt},
