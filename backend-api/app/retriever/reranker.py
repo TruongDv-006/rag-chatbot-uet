@@ -32,6 +32,7 @@ class ReRanker:
 
             for i, score in enumerate(scores):
                 documents[i]["rerank_score"] = float(score)
+                documents[i]["score"] = float(score)
 
             sorted_documents = sorted(documents, key=lambda x: x.get("rerank_score", 0.0), reverse=True)
             return sorted_documents[:top_k]
