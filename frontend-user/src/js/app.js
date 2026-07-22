@@ -181,7 +181,10 @@ class AppController {
                 this.view.setActiveSession(this.currentSessionId);
             }
 
-            this.view.appendMessage('bot', data.answer ?? data.response ?? 'Không có phản hồi.', data.sources ?? []);
+            // Xử lý response từ backend - có thể là reply hoặc answer/response
+            const botReply = data.reply ?? data.answer ?? data.response ?? 'Không có phản hồi.';
+            const sources = data.source ?? data.sources ?? [];
+            this.view.appendMessage('bot', botReply, sources);
 
         } catch (err) {
             this.view.hideTyping();
