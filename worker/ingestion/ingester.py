@@ -1,82 +1,139 @@
 import os
+import sys
 import uuid
-import json
-from worker.ingestion.chunker import master_chunk
-from sentence_transformers import SentenceTransformer
-from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, Distance, PointStruct
+from pathlib import Path
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-# QDRANT_DATA_PATH = os.path.abspath(
-#     os.path.join(CURRENT_DIR, "../../infrastructure/volumes/qdrant_data")
-# )
-# QDRANT_URL = "http://localhost:6333"
-# QDRANT_URL = "http://qdrand_db:6333"
+# pyrefly: ignore [missing-import]
+from qdrant_client import QdrantClient 
+# pyrefly: ignore [missing-import]
+from qdrant_client.models import Distance, PointStruct, VectorParams
+# pyrefly: ignore [missing-import]
+from sentence_transformers import SentenceTransformer
+
+from worker.ingestion.chunker import master_chunk
+
+CURRENT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 COLLECTION_NAME = "uet_handbook"
 MODEL_NAME = "BAAI/bge-m3"
-QDRANT_URL=os.getenv("QDRANT_URL","http://localhost:6333")
-embed_model = SentenceTransformer(MODEL_NAME)
-# qdrant = QdrantClient(url=QDRANT_URL)
-qdrant = QdrantClient(path=QDRANT_URL)
+QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+DATA_ROOT = REPO_ROOT / "infrastructure" / "volumes" / "minio_data"
 
-if not qdrant.collection_exists(collection_name=COLLECTION_NAME):
-    qdrant.create_collection(
-        collection_name=COLLECTION_NAME,
-        vectors_config=VectorParams(size=1024, distance=Distance.COSINE)
-    )
 
-def process_and_ingest(file_content, filename, folder_type):
+def _ensure_collection(qdrant: QdrantClient) -> None:
+    if not qdrant.collection_exists(collection_name=COLLECTION_NAME):
+        qdrant.create_collection(
+            collection_name=COLLECTION_NAME,
+            vectors_config=VectorParams(size=1024, distance=Distance.COSINE),
+        )
+
+
+def process_and_ingest(qdrant: QdrantClient, embed_model: SentenceTransformer, file_content: str, filename: str, folder_type: str) -> int:
     chunks = master_chunk(file_content, filename, folder_type)
-
     if not chunks:
-        print("Khong co du lieu de xu ly")
-        return
-    #Lay toan bo noi dung cua file 
-    texts = [chunk["text"] for chunk in chunks] 
-    #Embedding sang vector so
-    embeddings = embed_model.encode(texts)
-    
-    points=[]
+        return 0
+
+    texts = [chunk["text"] for chunk in chunks]
+    embeddings = embed_model.encode(texts, batch_size=32, show_progress_bar=False)
+
+    points = []
     for i, chunk in enumerate(chunks):
         point_payload = chunk["metadata"].copy()
         point_payload["text_content"] = chunk["text"]
 
-        point = PointStruct(
-            id = str(uuid.uuid4()),
-            vector = embeddings[i].tolist(),
-            payload = point_payload 
+        points.append(
+            PointStruct(
+                id=str(uuid.uuid4()),
+                vector=embeddings[i].tolist(),
+                payload=point_payload,
+            )
         )
-        points.append(point)
-    
-    qdrant.upsert(
-        collection_name=COLLECTION_NAME,
-        points = points
-    )
+
+    qdrant.upsert(collection_name=COLLECTION_NAME, points=points)
+    return len(points)
+
+
+def ingest_all() -> bool:
+    print("=" * 70)
+    print("INGESTION SCRIPT")
+    print("=" * 70)
+
+    print("\n[1/5] Connecting to Qdrant...")
+    try:
+        qdrant = QdrantClient(url=QDRANT_URL)
+        _ensure_collection(qdrant)
+        info = qdrant.get_collection(COLLECTION_NAME)
+        print(f"✓ Connected. Current points: {info.points_count}")
+    except Exception as exc:
+        print(f"✗ Error: {exc}")
+        return False
+
+    print("\n[2/5] Loading embedding model (this may take 1-2 mins)...")
+    try:
+        print(f"  Loading {MODEL_NAME}...")
+        embed_model = SentenceTransformer(MODEL_NAME)
+        print("✓ Model loaded successfully")
+    except Exception as exc:
+        print(f"✗ Error loading model: {exc}")
+        return False
+
+    _ensure_collection(qdrant)
+
+    total_points = 0
+
+    docs_dir = DATA_ROOT / "docs_parsed"
+    web_dir = DATA_ROOT / "raw_web"
+
+    print("\n[3/5] Scanning documents...")
+    if docs_dir.exists():
+        txt_files = sorted(docs_dir.glob("*.txt"))
+        print(f"✓ Found {len(txt_files)} files:")
+        for f in txt_files:
+            mb = f.stat().st_size / 1024 / 1024
+            print(f"    • {f.name} ({mb:.1f} MB)")
+
+        print("\n[4/5] Processing docs_parsed...")
+        print("(This will take several minutes on CPU)...\n")
+        for file_idx, fpath in enumerate(txt_files, 1):
+            print(f"  [{file_idx}/{len(txt_files)}] {fpath.name}...", end="", flush=True)
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    content = f.read()
+                points_count = process_and_ingest(qdrant, embed_model, content, fpath.name, "docs_parsed")
+                total_points += points_count
+                print(f" [{points_count} points] ✓")
+            except Exception as exc:
+                print(f" [ERROR: {str(exc)[:40]}]")
+
+    if web_dir.exists():
+        json_files = sorted(web_dir.glob("*.json"))
+        if json_files:
+            print(f"\n✓ Found {len(json_files)} raw_web files")
+            print("\n[4/5] Processing raw_web...")
+        for file_idx, fpath in enumerate(json_files, 1):
+            print(f"  [{file_idx}/{len(json_files)}] {fpath.name}...", end="", flush=True)
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    content = f.read()
+                points_count = process_and_ingest(qdrant, embed_model, content, fpath.name, "raw_web")
+                total_points += points_count
+                print(f" [{points_count} points] ✓")
+            except Exception as exc:
+                print(f" [ERROR: {str(exc)[:40]}]")
+
+    print("\n[5/5] Verifying...")
+    try:
+        info = qdrant.get_collection(COLLECTION_NAME)
+        print(f"✓ Total points in Qdrant: {info.points_count}")
+        print(f"  Expected from this run: {total_points}")
+    except Exception:
+        pass
+
+    print("\n" + "=" * 70)
+    print("✓ INGESTION COMPLETE")
+    print("=" * 70)
+    return True
+
+
 if __name__ == "__main__":
-    # Đường dẫn quét file thô từ máy local của bạn
-    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-    base_dir = "../../infrastructure/volumes/minio_data"
-    
-    # 1. Quét thư mục docs_parsed
-    docs_dir = os.path.abspath(os.path.join(CURRENT_DIR, base_dir, "docs_parsed"))
-    if os.path.exists(docs_dir):
-        print(f"Đang quét thư mục: {docs_dir}")
-        for fname in os.listdir(docs_dir):
-            fpath = os.path.join(docs_dir, fname)
-            if os.path.isfile(fpath):
-                with open(fpath, "r", encoding="utf-8") as f:
-                    process_and_ingest(f.read(), fname, "docs_parsed")
-
-    # 2. Quét thư mục raw_web
-    web_dir = os.path.abspath(os.path.join(CURRENT_DIR, base_dir, "raw_web"))
-    if os.path.exists(web_dir):
-        print(f"Đang quét thư mục: {web_dir}")
-        for fname in os.listdir(web_dir):
-            if fname.endswith(".json"):
-                fpath = os.path.join(web_dir, fname)
-                with open(fpath, "r", encoding="utf-8") as f:
-                    process_and_ingest(f.read(), fname, "raw_web")
-
-    # ĐÃ SỬA: Khi dùng kết nối mạng (url), QdrantClient tự quản lý connection pool.
-    # Bạn không cần gọi qdrant.close() nữa (hàm close chỉ dùng khi kết nối bằng path vật lý).
-    print("\n[Hoàn thành] Dữ liệu đã được nạp trực tiếp vào Docker Volume thông qua Qdrant API!")
+    sys.exit(0 if ingest_all() else 1)
