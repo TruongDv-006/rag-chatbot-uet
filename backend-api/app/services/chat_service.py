@@ -1,7 +1,12 @@
+# pyrefly: ignore [missing-import]
 from qdrant_client.grpc import Range
 import os
+# pyrefly: ignore [missing-import]
 import requests
+# pyrefly: ignore [missing-import]
 from qdrant_client import QdrantClient
+# pyrefly: ignore [missing-import]
+from sentence_transformers import SentenceTransformer
 from app.retriever.hybrid import HybridRetrieve # pyrefly: ignore
 from app.generation.llm_client import OpenAICompatibleClient # pyrefly: ignore
 from app.generation.orchestrator import RAGGenerator # pyrefly: ignore
@@ -11,29 +16,50 @@ from app.models.chat import ChatSession, ChatMessage # pyrefly: ignore
 
 class ChatService:
     def __init__(self):
-        qdrant_url = os.getenv("QDRANT_URL","http://qdrant_db:6333")
-
-        self.qdrant_client = QdrantClient(url=qdrant_url)
+        self.qdrant_url = os.getenv("QDRANT_URL", "http://qdrant_db:6333")
         self.collection_name = "uet_handbook"
-        self.embed_model = "BAAI/bge-m3"
-        self.llm_url = os.getenv("LLM_API_BASE","http://ollama:11434/api")
+        self.embed_model_name = "BAAI/bge-m3"
+        self.llm_url = os.getenv("LLM_API_BASE", "http://ollama:11434/api")
 
-        self.retriever = HybridRetrieve(
-            self.qdrant_client,
-            self.collection_name,
-            self.embed_model
-        )
+        self._qdrant_client = None
+        self._embed_model = None
+        self._retriever = None
+        self._generator = None
 
-        self.llm_client = OpenAICompatibleClient()
-        self.generator = RAGGenerator(self.llm_client)
+    @property
+    def qdrant_client(self):
+        if self._qdrant_client is None:
+            self._qdrant_client = QdrantClient(url=self.qdrant_url)
+        return self._qdrant_client
+
+    @property
+    def embed_model(self):
+        if self._embed_model is None:
+            self._embed_model = SentenceTransformer(self.embed_model_name)
+        return self._embed_model
+
+    @property
+    def retriever(self):
+        if self._retriever is None:
+            self._retriever = HybridRetrieve(
+                self.qdrant_client,
+                self.collection_name,
+                self.embed_model_name
+            )
+        return self._retriever
+
+    @property
+    def generator(self):
+        if self._generator is None:
+            llm_client = OpenAICompatibleClient()
+            self._generator = RAGGenerator(llm_client)
+        return self._generator
 
 
     def _get_embedding(self, text:str):
         try:
-            url = f"{self.llm_url}/embeddings"
-            res = requests.post(url, json={"model": self.embed_model, "prompt": text}, timeout=3)
-            if res.ok:
-                return res.json().get("embedding", [])
+            embedding = self.embed_model.encode(text).tolist()
+            return embedding
         except Exception as e:
             print(f"[Embedding Warning] {e}")
         return []
@@ -84,7 +110,7 @@ class ChatService:
             )
 
             # Nếu không có embedding (Qdrant chưa có dữ liệu), hạ ngưỡng để LLM vẫn được gọi
-            score_threshold = 0.0 if not query_vector else 0.3
+            score_threshold = 0.0 if not query_vector else -5.0
             reply_text = self.generator.execute(
                 query = message,
                 retrieved_docs=retrieved_docs,
