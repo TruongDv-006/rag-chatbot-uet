@@ -60,7 +60,7 @@ class HybridRetrieve:
         return documents
 
     def search(self, query:str, query_vector:list[float], top_k: int=5):
-        raw_top_k = top_k * 4
+        raw_top_k = top_k * 2 
 
         semantic_result = self.semantic_retriever.search(
             query_vector,
