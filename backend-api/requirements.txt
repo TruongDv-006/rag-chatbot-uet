@@ -2,7 +2,7 @@ qdrant-client
 rank_bm25
 sentence-transformers
 underthesea
-
+torch
 fastapi
 uvicorn
 pydantic

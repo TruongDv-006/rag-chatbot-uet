@@ -78,6 +78,13 @@ services:
       - redis_broker
     networks:
       - rag_network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
 # PHẦN XỬ LÝ GIAO DIỆN VÀ NGINX
 

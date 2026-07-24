@@ -1,7 +1,9 @@
 # pyrefly: ignore[missing-import]
 from typing import Any, cast
+# pyrefly: ignore [missing-import]
 from sentence_transformers import CrossEncoder
-
+# pyrefly: ignore [missing-import]
+import torch
 class ReRanker:
     def __init__(self, model_name: str = "BAAI/bge-reranker-base"):
         self.model_name = model_name
@@ -11,7 +13,7 @@ class ReRanker:
     def _get_model(self):
         if self._model is None and not self._load_failed:
             try:
-                self._model = CrossEncoder(self.model_name)
+                self._model = CrossEncoder(self.model_name, device="cuda" if torch.cuda.is_available() else "cpu")
             except Exception as e:
                 print(f"[ReRanker Warning] Không tải được model rerank {self.model_name}: {e}")
                 self._load_failed = True

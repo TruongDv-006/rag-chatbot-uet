@@ -4,6 +4,8 @@ import os
 # pyrefly: ignore [missing-import]
 import requests
 # pyrefly: ignore [missing-import]
+import torch
+# pyrefly: ignore [missing-import]
 from qdrant_client import QdrantClient
 # pyrefly: ignore [missing-import]
 from sentence_transformers import SentenceTransformer
@@ -35,7 +37,7 @@ class ChatService:
     @property
     def embed_model(self):
         if self._embed_model is None:
-            self._embed_model = SentenceTransformer(self.embed_model_name)
+            self._embed_model = SentenceTransformer(self.embed_model_name, device="cuda" if torch.cuda.is_available() else "cpu")
         return self._embed_model
 
     @property

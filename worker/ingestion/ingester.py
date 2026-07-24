@@ -2,7 +2,8 @@ import os
 import sys
 import uuid
 from pathlib import Path
-
+# pyrefly: ignore [missing-import]
+import torch
 # pyrefly: ignore [missing-import]
 from qdrant_client import QdrantClient 
 # pyrefly: ignore [missing-import]
@@ -71,7 +72,7 @@ def ingest_all() -> bool:
     print("\n[2/5] Loading embedding model (this may take 1-2 mins)...")
     try:
         print(f"  Loading {MODEL_NAME}...")
-        embed_model = SentenceTransformer(MODEL_NAME)
+        embed_model = SentenceTransformer(MODEL_NAME, device="cuda" if torch.cuda.is_available() else "cpu")
         print("✓ Model loaded successfully")
     except Exception as exc:
         print(f"✗ Error loading model: {exc}")
