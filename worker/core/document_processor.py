@@ -39,6 +39,10 @@ class DocumentProcessor:
             raw_text = parser.parse_pdf(file_path = file_path)
         elif file_name.lower().endswith(".docx"):
             raw_text = parser.parse_docx(file_path = file_path)
+        elif file_name.lower().endswith(".json"):
+            with open(file_path, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+            folder_type = "raw_web"
         else:
             print("Không hỗ trợ định dạng này")
             return False
@@ -47,12 +51,18 @@ class DocumentProcessor:
             return False
 
         base_name = os.path.splitext(file_name)[0]
-        parsed_filename = f"{base_name}_parsed.txt"
-        save_path = os.path.join(base_dir, "docs_parsed", parsed_filename)
-         
-        os.makedirs(os.path.dirname(save_path), exist_ok = True)
-        with open(save_path, "w", encoding="utf-8") as f:
-            f.write(raw_text)
+        if folder_type == "doc_parsed":
+            parsed_filename = f"{base_name}_parsed.txt"
+            save_path = os.path.join(base_dir, "docs_parsed", parsed_filename)
+            os.makedirs(os.path.dirname(save_path), exist_ok = True)
+            with open(save_path, "w", encoding="utf-8") as f:
+                f.write(raw_text)
+        elif folder_type == "raw_web":
+            save_path = os.path.join(base_dir, "raw_web", file_name)
+            os.makedirs(os.path.dirname(save_path), exist_ok = True)
+            if save_path != file_path and os.path.exists(file_path):
+                with open(save_path, "w", encoding="utf-8") as f:
+                    f.write(raw_text)
 
         # Giai đoạn Chunking (sử dụng file_name gốc để metadata source khớp với doc_name)
         chunks = master_chunk(raw_text, file_name, folder_type)
