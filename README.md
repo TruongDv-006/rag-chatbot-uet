@@ -1,190 +1,253 @@
-# UET Handbook RAG Microservices 🚀
+# rag-chatbot-uet
 
-Hệ thống Chatbot tra cứu **Sổ tay Sinh viên UET** (UET Handbook) sử dụng kiến trúc **Microservices** kết hợp công nghệ **RAG** (Retrieval-Augmented Generation). 
+> 📁 Check out [**STRUCTURE.md**](STRUCTURE.md) for a detailed breakdown of the project directory structure and microservice layout.
 
-Hệ thống cho phép người dùng hỏi đáp thông tin chính xác về quy chế, quy định học tập, học phí, học bổng tại UET; đồng thời hỗ trợ quản trị viên quản lý, cập nhật tài liệu và theo dõi tiến trình xử lý dữ liệu tự động.
+<br />
+
+<div align="center"><a href="#top"></a>
+
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="Logo" width="80" height="80">
+
+![Static Badge](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/python-3.10-blue?style=for-the-badge&logo=python&logoColor=white)
+![Platform](https://img.shields.io/badge/platform-linux%20%7C%20wsl-orange.svg?style=for-the-badge)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Qdrant](https://img.shields.io/badge/Qdrant-DC2626?style=for-the-badge&logo=qdrant&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![MinIO](https://img.shields.io/badge/MinIO-C72E49?style=for-the-badge&logo=minio&logoColor=white)
+![NGINX](https://img.shields.io/badge/-NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![DOCKER](https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white)
+
+<h2 align="center">UET HANDBOOK & ACADEMIC REGULATIONS CHATBOT<br/>(HYBRID RAG CHATBOT MICROSERVICES)</h2>
+
+<p align="center">
+An intelligent web chatbot leveraging Microservices architecture, Hybrid RAG (Dense + Sparse Retrieval), ReRanker, and Large Language Models (LLM) to assist students in querying academic regulations, tuition fees, and scholarship criteria at UET with transparent real-time source citations.
+<br />
+</p>
+</div>
+
+<details>
+<summary>Table of Contents</summary>
+<ol>
+<li><a href="#ℹ️-project-information">Project Information</a>
+<ul>
+<li><a href="#-team-members">Team Members</a></li>
+<li><a href="#-tech-stack">Tech Stack</a></li>
+</ul>
+</li>
+<li>
+<a href="#️-installation--usage-guide">Installation & Usage Guide</a>
+<ul>
+<li><a href="#-system-requirements">System Requirements</a></li>
+<li><a href="#-running-with-docker">Running with Docker</a></li>
+<li><a href="#-manual-batch-ingestion-task">Manual Batch Ingestion Task</a></li>
+</ul>
+</li>
+<li><a href="#️-architecture--system-flow">Architecture & System Flow</a></li>
+<li><a href="#-project-directory-structure">Project Directory Structure</a></li>
+<li><a href="#-key-features">Key Features</a></li>
+<li><a href="#-application-screenshots">Application Screenshots</a></li>
+<li><a href="#-future-roadmap">Future Roadmap</a></li>
+</ol>
+</details>
+
+## ℹ️ Project Information
+
+During their academic journey at the **VNU University of Engineering and Technology (UET - VNU)**, students frequently need to search for critical academic information, such as training regulations, tuition fee schedules, scholarship requirements, course registration guidelines, and administrative procedures. However, these documents are often scattered across various PDF files, DOCX announcements, and departmental web portals. Manual searching can be time-consuming and prone to missing key updates.
+
+The **UET Handbook Hybrid RAG Microservices System** digitizes and automates this retrieval process using modern Artificial Intelligence (AI) technologies:
+
+- **Ingestion & Preprocessing Pipeline:** Administrators or background Celery Workers gather raw web data (`.json`) and formal documents (`.pdf`, `.docx`). A smart semantic chunker divides text by Chapter, Section, and Article, computes embeddings via `BAAI/bge-m3`, and stores payloads concurrently in **Qdrant Vector DB** and **MinIO Object Storage**.
+- **Question-Answering & Retrieval Flow:** Students input queries via the Chat UI. The system automatically executes a **Hybrid Search** combining keyword search (BM25 sparse vectors using the Vietnamese word segmenter `underthesea`) and semantic search (Dense vectors in Qdrant), re-ranks top contexts using **ReRanker** (`BAAI/bge-reranker-base`), and forwards context to an LLM (`qwen2.5:3b` via Ollama) to generate accurate responses with **transparent in-text citations** (`[Document X]`).
+
+### 🔧 Tech Stack
+
+Built using powerful open-source technologies:
+
+<p align="left">
+<a href="https://www.python.org/" target="_blank"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="40" height="40"/></a> 
+<a href="https://fastapi.tiangolo.com/" target="_blank"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/fastapi/fastapi-original.svg" alt="fastapi" width="40" height="40"/></a> 
+<a href="https://www.postgresql.org/" target="_blank"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original.svg" alt="postgresql" width="40" height="40"/></a>
+<a href="https://redis.io/" target="_blank"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/redis/redis-original.svg" alt="redis" width="40" height="40"/></a>
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original-wordmark.svg" alt="html5" width="40" height="40"/></a> 
+<a href="https://www.w3schools.com/css/" target="_blank"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original-wordmark.svg" alt="css3" width="40" height="40"/></a> 
+<a href="https://nginx.org/" target="_blank"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nginx/nginx-original.svg" alt="nginx" width="40" height="40"/></a> 
+<a href="https://www.docker.com/" target="_blank"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg" alt="docker" width="40" height="40"/></a>
+</p>
+
+| Component | Technology | Role in System |
+| :--- | :--- | :--- |
+| **Gateway / Reverse Proxy** | Nginx | Reverse proxy, SSL/HTTP routing, load balancing |
+| **Backend API** | Python 3.10, FastAPI | High-performance async RESTful API, RAG Orchestration & Session management |
+| **Relational Database** | PostgreSQL 15 | Stores user accounts, authentication data, chat sessions & messages |
+| **Vector Database** | Qdrant | High-speed storage & retrieval for 1024D vector embeddings |
+| **Object Storage** | MinIO (S3-compatible) | Stores raw document files (`.pdf`, `.docx`) and scraped web JSON files |
+| **Message Broker & Queue**| Redis 7 | Message broker coordinating asynchronous background tasks |
+| **Background Worker** | Celery | Handles background web scraping, document parsing, and vector ingestion |
+| **Embedding Model** | `BAAI/bge-m3` | Multi-lingual semantic embedding (Dense 1024D) |
+| **ReRanker Model** | `BAAI/bge-reranker-base` | Re-ranks relevance scores between user query and retrieved passages |
+| **Local LLM Engine** | Ollama (`qwen2.5:3b`) | Generates natural, accurate responses in Vietnamese |
+| **Frontend** | HTML5, Vanilla CSS, JS (ES6) | Lightweight UIs for Student Chatbot, Authentication & Admin Dashboard |
+| **Deployment** | Docker, Docker Compose | Containerized orchestration of all microservices |
+
+## ⚙️ Installation & Usage Guide
+
+### 📦 System Requirements
+
+The system is optimized to run inside Docker containers. Ensure you have installed:
+
+- **Docker** (>= 20.10) and **Docker Compose** (>= 2.0).
+- **Ollama Engine** (with `qwen2.5:3b` model pulled) running locally or via `uet_ollama` container.
+
+### 🐳 Running with Docker
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/TruongDv-006/rag-chatbot-uet.git
+   ```
+
+2. **Navigate to project root:**
+
+   ```bash
+   cd rag-chatbot-uet
+   ```
+
+3. **Launch system with Docker Compose:**
+   This command automatically builds images, initializes networks, and launches Nginx, PostgreSQL, Qdrant, MinIO, Redis, Celery Worker, and Backend API containers.
+
+   ```bash
+   docker-compose up -d --build
+   ```
+
+   ⚠️ *Note:*
+   On first launch, `uet_worker` and `uet_backend` may take **1-2 minutes** to download weights for `bge-m3` and `bge-reranker-base` models if not cached locally.
+
+4. **Access Applications:**
+   - **Student Chatbot UI:** [http://localhost](http://localhost) (Port 80)
+   - **Login & Registration Page:** [http://localhost/login](http://localhost/login)
+   - **Admin Dashboard:** [http://localhost/admin](http://localhost/admin)
+   - **FastAPI Documentation (Swagger UI):** [http://localhost:8000/docs](http://localhost:8000/docs)
+   - **Qdrant Web Dashboard:** [http://localhost:6333/dashboard](http://localhost:6333/dashboard)
+
+5. **Stop Services:**
+   ```bash
+   docker-compose down
+   ```
 
 ---
 
-## 🏗️ Kiến Trúc Hệ Thống (Architecture)
+### 🔌 Manual Batch Ingestion Task
 
-Sơ đồ hoạt động của các dịch vụ trong hệ thống:
+To re-run web crawling or re-ingest all document files from MinIO into Qdrant Vector Database manually:
+
+```bash
+docker exec -it uet_worker python -m worker.ingestion.ingester
+```
+
+## 🏗️ Architecture & System Flow
 
 ```mermaid
 graph TD
-    User([Người dùng / Sinh viên]) <--> |HTTP/WS| Nginx{Nginx Load Balancer}
-    Admin([Quản trị viên]) <--> |HTTP/WS| Nginx
+    User([🧑‍🎓 Student / User]) <--> |HTTP| Nginx{🌐 Nginx Reverse Proxy}
+    Admin([⚙️ Administrator / Admin]) <--> |HTTP| Nginx
 
-    Nginx <--> |Port 80/443| FrontendUser[Frontend User]
-    Nginx <--> |Port 8080| FrontendAdmin[Frontend Admin]
-    Nginx <--> |Port 8000| BackendAPI[Backend API FastAPI]
+    Nginx <--> |Port 80 /| FrontendUser[💻 Frontend User - Chat UI]
+    Nginx <--> |Port 80 /admin| FrontendAdmin[🛠️ Frontend Admin]
+    Nginx <--> |Port 80 /login| FrontendLogin[🔑 Frontend Login]
+    Nginx <--> |Port 8000 /api| BackendAPI[🧠 Backend API - FastAPI]
 
-    subgraph Backend & Processing
-        BackendAPI <--> |Lưu trữ metadata & lịch sử| Postgres[(PostgreSQL DB)]
-        BackendAPI <--> |Tìm kiếm Vector| Qdrant[(Qdrant Vector DB)]
-        BackendAPI <--> |Lưu trữ tài liệu gốc| MinIO[(MinIO Object Storage)]
-        BackendAPI --> |Gửi Task Crawl/Ingest| MQ[Message Queue: Redis/RabbitMQ]
+    subgraph Core Backend Services
+        BackendAPI <--> |User, Sessions, Messages| Postgres[(🐘 PostgreSQL DB)]
+        BackendAPI <--> |Hybrid Search & Vectors| Qdrant[(🔍 Qdrant Vector DB)]
+        BackendAPI <--> |Raw & Parsed Docs Storage| MinIO[(📦 MinIO Storage)]
+        BackendAPI --> |Queue task /upload-doc| Redis[(⚡ Redis Broker)]
     end
 
-    subgraph Background Worker
-        MQ <--> Worker[Worker Service]
-        Worker --> |1. Crawl dữ liệu| Crawler[Crawler Module]
-        Worker --> |2. Chunking & Embed bge-m3| Ingestion[Ingestion Module]
-        Ingestion --> |Đẩy embeddings| Qdrant
-        Crawler & Ingestion --> |Lưu file gốc| MinIO
+    subgraph Async Background Worker
+        Redis <--> Worker[⏳ Worker - Celery]
+        Worker --> |1. Crawl Web Pages| Crawler[🕷️ Web Crawler]
+        Worker --> |2. Chunking & Embed BGE-M3| Ingestion[🧩 Ingestion Module]
+        Ingestion --> |Upsert vectors| Qdrant
+        Crawler & Ingestion --> |Save raw & parsed docs| MinIO
     end
 
-    subgraph LLM Generation
-        BackendAPI <--> |Gọi LLM Inference| LLM[Qwen2.5-3B-Instruct]
+    subgraph Local LLM Engine
+        BackendAPI <--> |OpenAI API Protocol| Ollama[🦙 Ollama Engine - Qwen2.5:3b]
     end
 ```
 
----
+The Microservices architecture enforces clear separation of concerns:
 
-## 📁 Cấu Trúc Thư Mục Dự Án
+- **Nginx Gateway:** Acts as a reverse proxy, serving static assets for frontends and routing API requests to FastAPI backend.
+- **Backend API (FastAPI):** Handles RAG orchestration (Retrieval, ReRanking, LLM Prompting), JWT authentication, and session endpoints.
+- **Qdrant Vector DB:** Stores 1024D vector embeddings and performs high-speed Hybrid Search (Sparse BM25 + Dense Vectors).
+- **MinIO Object Storage:** Stores raw files (`.pdf`, `.docx`) and web crawl `.json` payloads.
+- **PostgreSQL 15:** Manages relational user profiles, chat session metadata, and historical messages.
+- **Redis & Celery Worker:** Handles background queues for asynchronous long-running tasks such as document ingestion and web scraping.
+- **Ollama LLM Engine:** Hosts local LLM (`qwen2.5:3b`) to generate natural answers grounded strictly in retrieved context.
 
-Chi tiết tổ chức thư mục của dự án `uet-handbook-rag-microservices`:
+## 📁 Project Directory Structure
+
+> 📄 For the complete directory tree and detailed module breakdown, please refer to [**STRUCTURE.md**](STRUCTURE.md).
 
 ```text
-uet-handbook-rag-microservices/
-├── docker-compose.yml           # "Trái tim" khởi chạy toàn bộ hệ thống (Nginx, Frontend, Backend, Worker, DBs)
-├── .env                         # Chứa các biến môi trường (Database passwords, API Keys,...)
-├── README.md                    # Tài liệu hướng dẫn cài đặt và sử dụng (File này)
-│
-├── nginx/                       # 🌐 Load Balancer & Cổng điều hướng chính
-│   ├── nginx.conf               # Định tuyến request tới Frontend User, Admin và Backend API
-│   └── Dockerfile
-│
-├── frontend-user/               # 🧑‍💻 Giao diện Chatbot dành cho Sinh viên (thay thế app.py gốc)
-│   ├── src/                     # Code React/Vite hiển thị khung chat, lịch sử chat và nguồn trích dẫn
-│   └── Dockerfile
-│
-├── frontend-admin/              # ⚙️ Giao diện Quản trị dành cho Admin
-│   ├── src/                     # Giao diện quản lý user, upload PDF/Docx, theo dõi tiến độ Ingestion
-│   └── Dockerfile
-│
-├── backend-api/                 # 🧠 API Server xử lý Logic Chat & Truy hồi RAG
-│   ├── app/
-│   │   ├── retriever/           # Hybrid Search (Kết hợp từ khóa BM25 + ngữ nghĩa Vector) & Reranking
-│   │   ├── generation/          # Kết nối LLM Qwen2.5-3B-Instruct, xử lý Prompt, chống ảo tưởng (Anti-Hallucination)
-│   │   ├── routes/              # Định nghĩa API endpoints (vd: /chat, /upload, /status)
-│   │   └── main.py              # Entrypoint khởi chạy server FastAPI
-│   ├── requirements.txt         # Các thư viện Python cần thiết cho backend
-│   └── Dockerfile
-│
-├── worker/                      # ⏳ Bộ xử lý tác vụ chạy nền (Background Worker)
-│   ├── crawler/                 # Cào và tự động tải dữ liệu từ các website Sổ tay UET
-│   ├── ingestion/               # Đọc file, phân tách văn bản (Chunking) và nhúng vector bằng model BGE-M3
-│   ├── tasks.py                 # Định nghĩa các task Celery/RQ nhận lệnh từ Message Queue
-│   ├── requirements.txt         # Các thư viện xử lý tài liệu (BeautifulSoup, PyPDF2, LangChain, SentenceTransformers...)
-│   └── Dockerfile
-│
-└── infrastructure/              # 🗄️ Lưu trữ dữ liệu lâu bền (Docker Volumes)
-    └── volumes/
-        ├── sql_data/            # Lưu trữ cơ sở dữ liệu quan hệ (Người dùng, Phân quyền, Lịch sử chat)
-        ├── minio_data/          # Object Storage lưu file PDF, DOCX hoặc ảnh gốc từ Sổ tay
-        └── qdrant_data/         # Vector Database lưu các vectors nhúng để tìm kiếm nhanh
+rag-chatbot-uet/
+├── docker-compose.yml           # Microservices orchestration configuration
+├── nginx/                       # Gateway & Reverse Proxy configuration
+├── frontend-login/              # Authentication UI
+├── frontend-user/               # Student Chatbot UI
+├── frontend-admin/              # Admin Dashboard UI
+├── backend-api/                 # FastAPI Server RAG & Logic Core
+├── worker/                      # Celery Background Worker & Ingestion Pipeline
+└── infrastructure/              # Persistent Database Volumes (MinIO, Postgres, Qdrant)
 ```
+
+## 🖥️ Key Features
+
+- 🔍 **Advanced Hybrid Search RAG:** Combines **BM25 Keyword Search** (`underthesea` Vietnamese word segmentation) + **Semantic Dense Search** (Qdrant `bge-m3`) + **Reciprocal Rank Fusion (RRF)** + **ReRanker** (`BAAI/bge-reranker-base`).
+- 📌 **Transparent Source Citation System:**
+  - Automatically appends inline citation badges directly in responses: `[Document 1]`, `[Document 2]`.
+  - Compiles an aggregated **Reference List** at the end of answers, displaying only verified context sources.
+- 🛡️ **Strict Anti-Hallucination Guardrails:** Binds LLM output tightly to retrieved context. Returns standard fallback responses when information is absent from database.
+- 📂 **Multi-Format Processing:** Supports `.pdf`, `.docx`, and web `.json` files with smart hierarchical chunking by Chapter, Section, and Article.
+- 👥 **Role-Based Auth & Session Tracking:** Complete JWT sign-up/login system with session memory for students and Admin Dashboard for document management.
+- ⚡ **High-Performance Asynchronous Architecture:** Decouples heavy processing tasks into background Celery workers via Redis queues.
+
+## 🖼️ Application Screenshots
+
+### 1. Student Chatbot Interface (User Chat UI)
+<div align="center">
+   <img src="./frontend-user/src/assets/preview_chat.png" alt="1 - Student Chatbot UI" width="80%" onerror="this.src='https://via.placeholder.com/800x450?text=User+Chat+UI'">
+</div>
+
+### 2. Login & Registration Page (Auth UI)
+<div align="center">
+   <img src="./frontend-login/src/assets/preview_login.png" alt="2 - Login UI" width="80%" onerror="this.src='https://via.placeholder.com/800x450?text=Login+UI'">
+</div>
+
+### 3. Admin Management Panel (Admin Dashboard)
+<div align="center">
+   <img src="./frontend-admin/src/assets/preview_admin.png" alt="3 - Admin Dashboard" width="80%" onerror="this.src='https://via.placeholder.com/800x450?text=Admin+Dashboard+UI'">
+</div>
+
+## 📈 Future Roadmap
+
+Planned enhancements for future iterations:
+
+- **Response Streaming (SSE / WebSockets):** Enable real-time token streaming (typewriter effect) to improve user UX.
+- **Multi-turn Memory Summarization:** Context window summarization to maintain long conversation turns efficiently.
+- **GraphRAG Integration:** Knowledge Graph integration to model complex inter-document relationships in academic regulations.
+- **Multimodal RAG Support:** Extract and understand embedded tables and flowcharts within regulation PDFs.
+- **Vietnamese LLM Fine-Tuning:** Domain-specific fine-tuning on UET academic guidelines to enhance accuracy and tone.
+
+<p align="center">(<a href="#top">back to top</a>)</p>
 
 ---
 
-## 🛠️ Công Nghệ Sử Dụng (Tech Stack)
+### 📝 Notes
 
-| Thành phần | Công nghệ lựa chọn | Vai trò |
-| :--- | :--- | :--- |
-| **Reverse Proxy / Gateway** | Nginx | Định tuyến, cân bằng tải, SSL Termination |
-| **Frontend User & Admin** | React (Vite) / TailwindCSS | Xây dựng giao diện web phản hồi nhanh, trực quan |
-| **Backend API** | FastAPI (Python) | High-performance API, tích hợp luồng RAG bất đồng bộ |
-| **Task Queue / Broker** | Redis / RabbitMQ | Điều phối tác vụ cào dữ liệu và ingest văn bản chạy ngầm |
-| **Background Worker** | Celery / Arq | Xử lý các job nặng bất đồng bộ để tránh nghẽn API chính |
-| **Vector Database** | Qdrant | Lưu trữ và tìm kiếm vector ngữ nghĩa với tốc độ cao |
-| **Object Storage** | MinIO | Lưu trữ tệp tin tài liệu gốc tải lên từ Admin hoặc Crawled |
-| **Relational Database** | PostgreSQL / MySQL | Quản lý tài khoản, phân quyền quản trị, lịch sử trò chuyện |
-| **Embedding Model** | BGE-M3 (`bge-m3`) | Model nhúng hỗ trợ tiếng Việt cực tốt, đa ngôn ngữ, hỗ trợ độ dài văn bản lớn |
-| **Large Language Model** | Qwen2.5-3B-Instruct | Sinh câu trả lời tự nhiên, chính xác dựa trên ngữ cảnh trích dẫn |
-
----
-
-## ⚙️ Hướng Dẫn Cài Đặt & Sử Dụng
-
-### 1. Chuẩn bị môi trường
-Yêu cầu hệ thống đã cài đặt sẵn:
-- **Docker** (phiên bản >= 20.10)
-- **Docker Compose** (phiên bản >= 2.0)
-
-### 2. Thiết lập biến môi trường (`.env`)
-Tạo file `.env` ở thư mục gốc của dự án dựa trên các biến cấu hình sau:
-```env
-# Database cấu hình
-POSTGRES_USER=uet_user
-POSTGRES_PASSWORD=uet_secret_password
-POSTGRES_DB=uet_handbook_db
-
-# Qdrant Vector DB cấu hình
-QDRANT_HOST=qdrant
-QDRANT_PORT=6333
-
-# MinIO Object Storage cấu hình
-MINIO_ROOT_USER=admin
-MINIO_ROOT_PASSWORD=minio_secret_password
-MINIO_DEFAULT_BUCKETS=uet-handbook
-
-# Redis làm Message Broker
-REDIS_URL=redis://redis:6379/0
-
-# LLM & API Keys
-LLM_API_BASE=http://your-llm-server-or-ollama:11434/v1
-LLM_MODEL_NAME=qwen2.5:3b-instruct
-EMBEDDING_MODEL_NAME=BAAI/bge-m3
-
-# JWT Secret Key cho phân quyền Admin
-JWT_SECRET=your_super_secret_jwt_key
-```
-
-### 3. Khởi chạy toàn bộ hệ thống bằng Docker Compose
-Tại thư mục gốc của dự án, chạy lệnh sau:
-```bash
-docker-compose up --build -d
-```
-
-Lệnh này sẽ tải các image cần thiết, build các container tự định nghĩa (`nginx`, `frontend-user`, `frontend-admin`, `backend-api`, `worker`) và chạy chúng dưới dạng daemon (chạy ngầm).
-
-### 4. Kiểm tra trạng thái hệ thống
-Sử dụng lệnh sau để kiểm tra xem các dịch vụ có hoạt động bình thường không:
-```bash
-docker-compose ps
-```
-
----
-
-## 🔌 Danh Sách API Endpoints (Sơ bộ)
-
-### 🧑‍💻 Luồng User (Khách)
-* `POST /api/chat`: Gửi câu hỏi, nhận phản hồi RAG kèm theo danh sách nguồn tài liệu tham khảo (citations).
-* `GET /api/chat/history`: Lấy lại lịch sử chat của phiên làm việc.
-
-### ⚙️ Luồng Admin
-* `POST /api/admin/upload`: Tải lên tài liệu mới (PDF/DOCX) để đưa vào hàng đợi Ingest.
-* `POST /api/admin/crawl`: Kích hoạt worker cào dữ liệu từ đường dẫn website Sổ tay UET.
-* `GET /api/admin/tasks/status`: Theo dõi trạng thái tiến độ các tác vụ xử lý ngầm (Crawl/Ingestion).
-* `GET /api/admin/documents`: Danh sách các tài liệu hiện có trong hệ thống và trạng thái của chúng (Chờ xử lý, Đang nhúng, Đã nhúng).
-
----
-
-## 🤝 Hướng Dẫn Phát Triển (Development Guide)
-
-Để phát triển riêng lẻ từng service dưới máy local mà không cần đóng gói Docker:
-
-1. **Khởi chạy Infrastructure trước**:
-   ```bash
-   docker-compose up -d redis qdrant minio db
-   ```
-2. **Khởi chạy Backend**:
-   - Truy cập `backend-api/`, tạo môi trường ảo Python và cài đặt thư viện (`pip install -r requirements.txt`).
-   - Chạy FastAPI bằng: `uvicorn app.main:app --reload`.
-3. **Khởi chạy Worker**:
-   - Truy cập `worker/`, cài đặt thư viện (`pip install -r requirements.txt`).
-   - Chạy worker thông qua celery hoặc arq tùy theo công nghệ triển khai cụ thể.
-4. **Khởi chạy Frontends**:
-   - Truy cập `frontend-user/` hoặc `frontend-admin/`.
-   - Cài đặt dependency (`npm install`) và khởi chạy máy chủ phát triển (`npm run dev`).
+- If you have questions or suggestions, feel free to submit an issue or pull request on GitHub.
+- This software is developed for educational purposes and academic regulation inquiry at VNU University of Engineering and Technology (UET - VNU).
+- Thank you for your interest in our project!
