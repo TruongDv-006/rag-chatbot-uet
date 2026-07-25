@@ -1,4 +1,5 @@
 import os
+# pyrefly: ignore [missing-import]
 from qdrant_client import  QdrantClient
 
 
@@ -15,7 +16,7 @@ class SemanticRetriever:
         self.collection_name = collection_name
     
 
-    def search(self, query_vector, top_k=5):
+    def search(self, query_vector, top_k=3):
         if not query_vector:
             return []
         try:

@@ -37,7 +37,7 @@ class KeywordRetriever:
         else:
             self.bm25 = None
 
-    def search(self, query: str, top_k :int=5):
+    def search(self, query: str, top_k :int=3):
         if not self.bm25 or not self.documents:
             return []
 

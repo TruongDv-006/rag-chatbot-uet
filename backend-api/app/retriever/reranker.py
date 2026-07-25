@@ -19,10 +19,10 @@ class ReRanker:
                 self._load_failed = True
         return self._model
 
-    def __call__(self, query: str, documents: list[dict], top_k: int = 5):
+    def __call__(self, query: str, documents: list[dict], top_k: int = 3):
         return self.rerank(query, documents, top_k)
 
-    def rerank(self, query: str, documents: list[dict], top_k: int = 5):
+    def rerank(self, query: str, documents: list[dict], top_k: int = 3):
         if not documents:
             return []
         model = self._get_model()
