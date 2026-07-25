@@ -16,10 +16,10 @@ class GenerationConfig(BaseSettings):
     DEFAULT_SCORE_THRESHOLD:float = 0.60
     
     #Giới hạn độ dài câu trả lời tính theo token
-    MAX_TOKENS:int = 350
+    MAX_TOKENS:int = 1024
     
-    #Độ sáng tạo của AI trong câu trả lời (0.0: Chuẩn xác 100%, không bịa)
-    TEMPERATURE:float = 0.05
+    #Độ sáng tạo của AI trong câu trả lời (0.2: Chuẩn xác và tự nhiên)
+    TEMPERATURE:float = 0.2
 
     class Config:
         # Lệnh này bảo Python tự động tìm và đọc thêm các biến môi trường từ tệp .env (nếu có)
