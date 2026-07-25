@@ -126,6 +126,31 @@ class ChatService:
             for index, doc in enumerate(valid_docs, start=1):
                 mapped_sources[str(index)]=doc.get("source","Sổ tay UET")
 
+            # Tự động gán phần "Nguồn tham khảo:" vào cuối câu trả lời nếu LLM chưa ghi
+            if reply_text and "Tôi không có đủ dữ liệu để trả lời" not in reply_text:
+                if "Nguồn tham khảo:" not in reply_text and "Tài liệu tham khảo:" not in reply_text:
+                    import re
+                    import urllib.parse
+                    matches = re.findall(r'\[Tài liệu[^\]]*\]', reply_text, re.IGNORECASE)
+                    cited_indices_set = set()
+                    for m in matches:
+                        for d in re.findall(r'\d+', m):
+                            cited_indices_set.add(int(d))
+                    cited_indices = sorted(list(cited_indices_set))
+                    source_lines = []
+
+                    if cited_indices:
+                        for idx in cited_indices:
+                            if 1 <= idx <= len(valid_docs):
+                                raw_src = valid_docs[idx - 1].get("source", f"Tài liệu {idx}")
+                                clean_src = urllib.parse.unquote(raw_src)
+                                if clean_src.endswith("_parsed.txt"):
+                                    clean_src = clean_src[:-11]
+                                source_lines.append(f"- [Tài liệu {idx}]: {clean_src}")
+
+                    if source_lines:
+                        reply_text = reply_text.strip() + "\n\n**Nguồn tham khảo:**\n" + "\n".join(source_lines)
+
             ai_msg_obj = ChatMessage(
                 role="assistant",
                 content=reply_text,
