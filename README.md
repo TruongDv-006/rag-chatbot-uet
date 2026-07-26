@@ -124,21 +124,34 @@ The system is optimized to run inside Docker containers. Ensure you have install
    ⚠️ *Note:*
    On first launch, `uet_worker` and `uet_backend` may take **1-2 minutes** to download weights for `bge-m3` and `bge-reranker-base` models if not cached locally.
 
-4. **Access Applications:**
+4. **Verify & Pull Ollama LLM Model:**
+   Check if the LLM model is downloaded:
+
+   ```bash
+   docker exec -it uet_ollama ollama list
+   ```
+
+   If no model is present, pull it manually:
+
+   ```bash
+   docker exec -it uet_ollama ollama pull qwen2.5:3b
+   ```
+
+5. **Access Applications:**
    - **Student Chatbot UI:** [http://localhost](http://localhost) (Port 80)
    - **Login & Registration Page:** [http://localhost/login](http://localhost/login)
    - **Admin Dashboard:** [http://localhost/admin](http://localhost/admin)
    - **FastAPI Documentation (Swagger UI):** [http://localhost:8000/docs](http://localhost:8000/docs)
    - **Qdrant Web Dashboard:** [http://localhost:6333/dashboard](http://localhost:6333/dashboard)
 
-5. **🔑 Default Credentials (Tài khoản thử nghiệm mặc định):**
+6. **🔑 Default Credentials:**
 
    | Role | Username | Password | Email | Access |
    | :--- | :--- | :--- | :--- | :--- |
    | **Admin** | `admin1` | `Admin@123` | `admin1@vnu.edu.vn` | Admin Dashboard & Student Chatbot |
    | **Student (User)** | `sinhvien1` | `Student@123` | `sinhvien1@vnu.edu.vn` | Student Chat UI |
 
-6. **Stop Services:**
+7. **Stop Services:**
    ```bash
    docker-compose down
    ```
