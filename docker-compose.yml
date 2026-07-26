@@ -72,6 +72,7 @@ services:
     volumes:
       - ./worker:/app
       - ./infrastructure:/infrastructure
+      - hf_cache:/root/.cache/huggingface
     depends_on:
       - postgres_db
       - qdrant_db
@@ -140,6 +141,9 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: uet_ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=-1
+      - OLLAMA_NUM_PARALLEL=2
     ports:
       - "11434:11434"
     volumes:
@@ -147,13 +151,7 @@ services:
     restart: unless-stopped
     networks:
       - rag_network
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
+
 
   backend-api:
     build:
@@ -171,6 +169,7 @@ services:
     volumes:
       - ./backend-api:/app
       - ./infrastructure:/infrastructure
+      - hf_cache:/root/.cache/huggingface
     depends_on:
       - ollama
       - postgres_db
@@ -190,3 +189,4 @@ volumes:
   minio_data:
   redis_data:
   ollama_data:
+  hf_cache:

@@ -7,20 +7,29 @@ from app.retriever.reranker import ReRanker # pyrefly: ignore[missing-import]
 
 
 class HybridRetrieve:
+    _docs_cache = None
+    _keyword_retriever_cache = None
 
-    def __init__(self,qdrant_client : QdrantClient, collection_name: str, embed_model):
-        self.qdrant_client=qdrant_client
+    @classmethod
+    def clear_cache(cls):
+        cls._docs_cache = None
+        cls._keyword_retriever_cache = None
 
-        self.collection_name=collection_name
+    def __init__(self, qdrant_client: QdrantClient, collection_name: str, embed_model):
+        self.qdrant_client = qdrant_client
+        self.collection_name = collection_name
 
         self.semantic_retriever = SemanticRetriever(
             qdrant_url=qdrant_client,
             collection_name=collection_name
         ) 
-        document = self._scroll_all_documents_from_qdrant()
-        self.keyword_retriever = KeywordRetriever(
-            documents = document
-        )
+        
+        if HybridRetrieve._keyword_retriever_cache is None or not HybridRetrieve._docs_cache:
+            document = self._scroll_all_documents_from_qdrant()
+            HybridRetrieve._docs_cache = document
+            HybridRetrieve._keyword_retriever_cache = KeywordRetriever(documents=document)
+        
+        self.keyword_retriever = HybridRetrieve._keyword_retriever_cache
         self.rank_fusion = RankFusion(k=60)
         self.reranker = ReRanker(model_name = "BAAI/bge-reranker-base")
 

@@ -15,8 +15,8 @@ class GenerationConfig(BaseSettings):
     #Ngưỡng điểm tin cậy để chống ảo tưởng (nếu score nhỏ hơn ngưỡng này thì kết luận không có trong tài liệu)
     DEFAULT_SCORE_THRESHOLD:float = 0.60
     
-    #Giới hạn độ dài câu trả lời tính theo token
-    MAX_TOKENS:int = 1024
+    #Giới hạn độ dài câu trả lời tính theo token (tối ưu cho CPU)
+    MAX_TOKENS:int = 512
     
     #Độ sáng tạo của AI trong câu trả lời (0.2: Chuẩn xác và tự nhiên)
     TEMPERATURE:float = 0.2

@@ -28,15 +28,17 @@ class ReRanker:
         model = self._get_model()
         if model is None:
             return documents[:top_k]
+        # Chỉ rerank tối đa 5 candidate tốt nhất để tối ưu tốc độ xử lý trên CPU
+        candidate_docs = documents[:5]
         try:
-            pairs: list[tuple[str, str]] = [(query, str(doc.get("content", ""))) for doc in documents]
+            pairs: list[tuple[str, str]] = [(query, str(doc.get("content", ""))) for doc in candidate_docs]
             scores = model.predict(cast(Any, pairs))
 
             for i, score in enumerate(scores):
-                documents[i]["rerank_score"] = float(score)
-                documents[i]["score"] = float(score)
+                candidate_docs[i]["rerank_score"] = float(score)
+                candidate_docs[i]["score"] = float(score)
 
-            sorted_documents = sorted(documents, key=lambda x: x.get("rerank_score", 0.0), reverse=True)
+            sorted_documents = sorted(candidate_docs, key=lambda x: x.get("rerank_score", 0.0), reverse=True)
             return sorted_documents[:top_k]
         except Exception as e:
             print(f"[ReRanker Error] {e}")
