@@ -18,5 +18,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN ln -s /app /worker
 
-# Chạy Celery worker khi container khởi động
-CMD ["celery", "-A", "task", "worker", "--loglevel=info"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Chạy tự động ingester để chunk & vector hóa dữ liệu trước khi khởi chạy Celery worker
+ENTRYPOINT ["/entrypoint.sh"]
