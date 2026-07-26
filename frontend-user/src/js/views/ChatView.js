@@ -132,7 +132,9 @@ export class ChatView {
         const isBot = role === 'bot' || role === 'assistant';
         const roleClass = isBot ? 'bot' : 'user';
 
-        const avatarIcon = isBot ? 'fa-robot' : 'fa-user';
+        const avatarContent = isBot
+            ? `<img src="assets/vnu-uet.png" alt="Bot Logo" class="brand-logo-img" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">`
+            : `<i class="fas fa-user"></i>`;
         const timeStr = time ?? this._nowTime();
 
         // Render markdown cho bot, escape HTML cho user
@@ -156,7 +158,7 @@ export class ChatView {
         const div = document.createElement('div');
         div.className = `message ${roleClass}-message`;
         div.innerHTML = `
-            <div class="msg-avatar"><i class="fas ${avatarIcon}"></i></div>
+            <div class="msg-avatar">${avatarContent}</div>
             <div class="msg-content">
                 <div class="bubble">${bubbleHtml}</div>
                 ${sourcesHtml}

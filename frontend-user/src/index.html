@@ -6,6 +6,13 @@
     <meta name="description" content="UET RAG Chatbot – Hệ thống hỏi đáp thông minh dành cho sinh viên Đại học Công nghệ, ĐHQGHN">
     <title>UET RAG Chatbot – Sổ tay Sinh viên</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/vnu-uet.png">
+    <link rel="icon" type="image/jpeg" href="assets/vnu-uet.jpg">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="assets/vnu-uet.png">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +25,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=1.0.9">
 </head>
 <body>
 
@@ -29,7 +36,7 @@
         <div class="auth-card">
             <div class="auth-logo">
                 <div class="logo-ring">
-                    <i class="fas fa-graduation-cap"></i>
+                    <img src="assets/vnu-uet.png" alt="VNU UET Logo" class="brand-logo-img" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">
                 </div>
             </div>
             <h1 class="auth-title">UET RAG System</h1>
@@ -52,7 +59,7 @@
             <div class="sidebar-header">
                 <div class="brand">
                     <div class="brand-icon">
-                        <i class="fas fa-graduation-cap"></i>
+                        <img src="assets/vnu-uet.png" alt="VNU UET Logo" class="brand-logo-img" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">
                     </div>
                     <div class="brand-text">
                         <span class="brand-name">UET RAG</span>
@@ -109,6 +116,9 @@
                 <button id="openSidebarBtn" class="icon-btn topbar-menu-btn" title="Mở menu">
                     <i class="fas fa-bars"></i>
                 </button>
+                <div class="topbar-brand" style="width:28px;height:28px;border-radius:6px;overflow:hidden;flex-shrink:0;margin-right:8px;">
+                    <img src="assets/vnu-uet.png" alt="VNU UET Logo" class="brand-logo-img" style="width:100%;height:100%;object-fit:contain;">
+                </div>
                 <div class="topbar-title" id="topbarTitle">
                     <i class="fas fa-comments"></i>
                     <span>Cuộc trò chuyện mới</span>
@@ -123,7 +133,7 @@
                 <div id="welcomeScreen" class="welcome-screen">
                     <div class="welcome-hero">
                         <div class="welcome-avatar">
-                            <i class="fas fa-robot"></i>
+                            <img src="assets/vnu-uet.png" alt="VNU UET Logo" class="brand-logo-img" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">
                         </div>
                         <h2 class="welcome-title">Xin chào! Tôi là UET Assistant</h2>
                         <p class="welcome-desc">
@@ -161,7 +171,7 @@
                 <!-- Typing Indicator -->
                 <div id="typingIndicator" class="typing-indicator hidden">
                     <div class="typing-avatar">
-                        <i class="fas fa-robot"></i>
+                        <img src="assets/vnu-uet.png" alt="Bot Logo" class="brand-logo-img" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">
                     </div>
                     <div class="typing-dots">
                         <span></span><span></span><span></span>
