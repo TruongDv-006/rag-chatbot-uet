@@ -14,6 +14,14 @@ QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 embed_model = SentenceTransformer(MODEL_NAME)
 qdrant = QdrantClient(url=QDRANT_URL)
 
+def reset_and_ensure_collection():
+    if qdrant.collection_exists(collection_name=COLLECTION_NAME):
+        qdrant.delete_collection(collection_name=COLLECTION_NAME)
+    qdrant.create_collection(
+        collection_name=COLLECTION_NAME,
+        vectors_config=VectorParams(size=1024, distance=Distance.COSINE)
+    )
+
 if not qdrant.collection_exists(collection_name=COLLECTION_NAME):
     qdrant.create_collection(
         collection_name=COLLECTION_NAME,
@@ -50,6 +58,7 @@ def process_and_ingest(file_content, filename, folder_type):
     )
 
 def ingest_all():
+    reset_and_ensure_collection()
     # Đường dẫn quét file thô từ máy local của bạn
     base_dir = "../../infrastructure/volumes/minio_data"
     

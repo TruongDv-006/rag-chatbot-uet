@@ -54,6 +54,15 @@ class UetHandbookScraper:
         for tag in soup.find_all("div", class_ = "nav-bar"):
             tag.decompose()
 
+        footer_keywords = {
+            "Biên tập: Phòng CTSV",
+            "Thiết kế: SV Trường ĐHCN",
+            "Thiết kế: SV trường ĐHCN",
+            "Email: ctsv_dhcn@vnu.edu.vn",
+            "Phòng 104-E3, 144 Xuân Thủy, Cầu Giấy, Hà Nội",
+            "ĐT: 02437548864"
+        }
+
         content_blocks = []
         # Lay noi dung tu khoi main-content tro di
         body_content = soup.find("body")
@@ -62,7 +71,7 @@ class UetHandbookScraper:
                 if tag.find(['span', 'p', 'h1', 'h2', 'h3', 'li', 'td', 'th']):
                     continue
                 text = tag.get_text(strip=True)
-                if text and text not in content_blocks:
+                if text and text not in footer_keywords and text not in content_blocks:
                     content_blocks.append(text)
         return "\n".join(content_blocks)
 
