@@ -14,6 +14,13 @@ QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 embed_model = SentenceTransformer(MODEL_NAME)
 qdrant = QdrantClient(url=QDRANT_URL)
 
+def ensure_collection_exists():
+    if not qdrant.collection_exists(collection_name=COLLECTION_NAME):
+        qdrant.create_collection(
+            collection_name=COLLECTION_NAME,
+            vectors_config=VectorParams(size=1024, distance=Distance.COSINE)
+        )
+
 def reset_and_ensure_collection():
     if qdrant.collection_exists(collection_name=COLLECTION_NAME):
         qdrant.delete_collection(collection_name=COLLECTION_NAME)
@@ -57,7 +64,20 @@ def process_and_ingest(file_content, filename, folder_type):
         points=points
     )
 
-def ingest_all():
+def ingest_all(force: bool = False):
+    ensure_collection_exists()
+
+    force_env = os.getenv("FORCE_INGEST", "false").lower() == "true"
+    if not force and not force_env:
+        try:
+            info = qdrant.get_collection(collection_name=COLLECTION_NAME)
+            if info.points_count and info.points_count > 0:
+                print(f"[Ingestion] Collection '{COLLECTION_NAME}' đã có {info.points_count} vectors. Bỏ qua re-chunking/ingestion!")
+                return
+        except Exception as e:
+            print(f"[Ingestion] Lỗi khi kiểm tra dữ liệu cũ: {e}")
+
+    print("[Ingestion] Bắt đầu nạp lại dữ liệu vào Qdrant...")
     reset_and_ensure_collection()
     # Đường dẫn quét file thô từ máy local của bạn
     base_dir = "../../infrastructure/volumes/minio_data"
