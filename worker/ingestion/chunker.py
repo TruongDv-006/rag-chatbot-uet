@@ -91,9 +91,10 @@ def chunk_academic_calendar(text_content, filename):
 
 def chunk_raw_web(json_string, filename):
     """
-    Hàm chunk nội dung từ file json raw_web.
-    Đọc json_string để lấy url, title và content, 
-    sau đó chunk content theo từng dòng với độ dài tối đa.
+    Hàm chunk tối ưu cho raw_web:
+    - Chèn tiêu đề trang (Title) vào đầu mỗi chunk để giữ ngữ cảnh.
+    - Gộp 3 - 5 dòng liên tiếp (khoảng 300 - 400 ký tự) có độ gối đầu (overlap)
+      để đảm bảo thông tin liên hệ/thủ tục không bị ngắt rời rạc.
     """
     try:
         data = json.loads(json_string)
@@ -104,43 +105,39 @@ def chunk_raw_web(json_string, filename):
     title = data.get("title", "")
     content = data.get("content", "")
 
-    if not content:
+    if not content or not content.strip():
         return []
 
-    # Tách theo dòng để đảm bảo không cắt ngang giữa câu nếu không cần thiết
-    paragraphs = [p.strip() for p in content.split('\n') if p.strip()]
-    
+    lines = [line.strip() for line in content.split('\n') if line.strip()]
+    if not lines:
+        return []
+
     chunks = []
-    current_chunk = ""
-    MAX_LENGTH = 1000 # Kích thước tối đa cho mỗi chunk
+    MAX_CHUNK_SIZE = 350  # Kích thước tối ưu cho 1 khối thông tin web
+    OVERLAP_LINES = 1     # Gối đầu 1 dòng giữa các chunk
 
-    for p in paragraphs:
-        if len(current_chunk) + len(p) + 1 <= MAX_LENGTH:
-            current_chunk = current_chunk + "\n" + p if current_chunk else p
-        else:
-            if current_chunk:
-                chunks.append({
-                    "text": current_chunk,
-                    "metadata": {"source": filename, "url": url, "title": title}
-                })
-            
-            # Xử lý trường hợp một dòng quá dài (> MAX_LENGTH)
-            if len(p) > MAX_LENGTH:
-                while len(p) > MAX_LENGTH:
-                    chunks.append({
-                        "text": p[:MAX_LENGTH],
-                        "metadata": {"source": filename, "url": url, "title": title}
-                    })
-                    p = p[MAX_LENGTH:]
-                current_chunk = p
-            else:
-                current_chunk = p
+    i = 0
+    while i < len(lines):
+        current_lines = []
+        current_len = 0
+        
+        j = i
+        while j < len(lines):
+            line = lines[j]
+            if current_len + len(line) > MAX_CHUNK_SIZE and current_lines:
+                break
+            current_lines.append(line)
+            current_len += len(line)
+            j += 1
 
-    if current_chunk:
+        chunk_text = f"Trang: {title}\n" + "\n".join(current_lines)
         chunks.append({
-            "text": current_chunk,
+            "text": chunk_text,
             "metadata": {"source": filename, "url": url, "title": title}
         })
+
+        advance = max(1, len(current_lines) - OVERLAP_LINES)
+        i += advance
 
     return chunks
 
