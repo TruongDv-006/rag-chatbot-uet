@@ -18,14 +18,13 @@ os.makedirs(PARSER_DOCS_DIR, exist_ok=True)
 class DocumentParser:
     @staticmethod
     def clean_pdf_text(raw_text):
-        # 1. Xóa số trang
+        # Xóa số trang
         cleaned = re.sub(r'^\s*\d+\s*$\n?', '', raw_text, flags=re.MULTILINE)
         
-        # 2. Nối các câu bị đứt đoạn do xuống dòng vật lý
+        # Nối các câu bị đứt đoạn do xuống dòng
         cleaned = re.sub(r'(?<![.:!?;\-])\n+', ' ', cleaned)
         
-        # 3. MỚI THÊM: Tách các mục lục (Điều X., 1., a)) bị dính chùm xuống dòng mới
-        # Cú pháp này tìm các khoảng trắng nằm ngay trước các từ khóa danh sách và biến nó thành \n
+        # Tách các mục lục (Điều X., 1., a)) bị dính chùm xuống dòng mới
         cleaned = re.sub(
         r'(?<=[^\s])(?<!Điều)(?<!ĐIỀU)(?<!Chương)(?<!CHƯƠNG)\s+(?=(Điều\s+\d+|[1-9]+\.|[a-zđĐ]\)))', 
         '\n', 
@@ -33,7 +32,7 @@ class DocumentParser:
         flags=re.IGNORECASE
         )
         
-        # 4. Dọn dẹp khoảng trắng thừa
+        # Dọn dẹp khoảng trắng thừa
         cleaned = re.sub(r'[ \t]+', ' ', cleaned)
         return cleaned.strip()
     @classmethod

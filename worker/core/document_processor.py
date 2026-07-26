@@ -89,8 +89,7 @@ class DocumentProcessor:
 
         try:
             self.qdrant_client.upsert(collection_name=self.collection_name, points=points)
-            print(f"[Processor] Thành công. Đã xử lý {len(points)} đoạn từ file {file_name} vào Qdrant.")
             return True
         except Exception as e:
-            print(f"[Processor] Lỗi khi đẩy dữ liệu lên Qdrant: {e}")
+            print(f"Processor: Lỗi khi đẩy dữ liệu lên Qdrant: {e}")
             return False

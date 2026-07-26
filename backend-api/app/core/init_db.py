@@ -43,7 +43,5 @@ def seed_default_users(db: Session):
                 )
                 db.add(db_user)
         db.commit()
-        print("[Seed] Hoàn thành seed tài khoản mặc định!")
     except Exception as e:
         db.rollback()
-        print(f"[Seed] Lỗi khi seed dữ liệu: {e}")

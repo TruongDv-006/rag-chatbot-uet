@@ -37,12 +37,12 @@ class RAGGenerator:
         # Lọc tài liệu chỉ khi có ngưỡng hợp lệ
         if threshold > 0.0:
             valid_docs = [doc for doc in retrieved_docs if doc.get("score", 0.0) >= threshold]
-            # Không có tài liệu đạt chuẩn → fallback, chống hallucination
+            # Không có tài liệu đạt chuẩn thì fallback, chống hallucination
             if not valid_docs:
                 print(f"[Anti-Hallucination] Câu hỏi '{query}' bị từ chối vì không có tài liệu đạt chuẩn (ngưỡng={threshold}).")
                 return self.fallback_message
         else:
-            # threshold=0.0: Qdrant chưa có dữ liệu → LLM trả lời dựa trên kiến thức chung
+            # threshold=0.0: Qdrant chưa có dữ liệu thì LLM trả lời dựa trên kiến thức chung
             valid_docs = retrieved_docs or []
             print(f"[RAG] Không có embedding, LLM sẽ trả lời dựa trên kiến thức chung cho: '{query}'")
 

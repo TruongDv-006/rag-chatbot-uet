@@ -1,9 +1,8 @@
-# Quản lý cấu hình (ngưỡng score, model name, endpoint)
 # pyrefly: ignore [missing-import]
 from pydantic_settings import BaseSettings
     
 class GenerationConfig(BaseSettings):
-    #Tên mô hình đang sử dụng (dùng mô hình qwen 3b dùng cho tiếng việt)
+    # Tên model
     MODEL_NAME:str = "qwen2.5:3b"
 
     #Địa chỉ kết nối với Ollama trong mạng Docker
@@ -22,7 +21,7 @@ class GenerationConfig(BaseSettings):
     TEMPERATURE:float = 0.2
 
     class Config:
-        # Lệnh này bảo Python tự động tìm và đọc thêm các biến môi trường từ tệp .env (nếu có)
+        # cái này dùng để Python tự động tìm và đọc thêm các biến môi trường từ tệp .env (nếu có)
         env_file = ".env"
         extra = "ignore"
 

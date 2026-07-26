@@ -28,7 +28,7 @@ class ReRanker:
         model = self._get_model()
         if model is None:
             return documents[:top_k]
-        # Chỉ rerank tối đa 5 candidate tốt nhất để tối ưu tốc độ xử lý trên CPU
+        # Chỉ rerank tối đa 5 candidate tốt nhất để tối ưu tốc độ xử lý 
         candidate_docs = documents[:5]
         try:
             pairs: list[tuple[str, str]] = [(query, str(doc.get("content", ""))) for doc in candidate_docs]
