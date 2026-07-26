@@ -131,7 +131,14 @@ The system is optimized to run inside Docker containers. Ensure you have install
    - **FastAPI Documentation (Swagger UI):** [http://localhost:8000/docs](http://localhost:8000/docs)
    - **Qdrant Web Dashboard:** [http://localhost:6333/dashboard](http://localhost:6333/dashboard)
 
-5. **Stop Services:**
+5. **🔑 Default Credentials (Tài khoản thử nghiệm mặc định):**
+
+   | Role | Username | Password | Email | Access |
+   | :--- | :--- | :--- | :--- | :--- |
+   | **Admin** | `admin1` | `Admin@123` | `admin1@vnu.edu.vn` | Admin Dashboard & Student Chatbot |
+   | **Student (User)** | `sinhvien1` | `Student@123` | `sinhvien1@vnu.edu.vn` | Student Chat UI |
+
+6. **Stop Services:**
    ```bash
    docker-compose down
    ```
