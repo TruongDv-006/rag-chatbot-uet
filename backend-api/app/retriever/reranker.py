@@ -1,3 +1,4 @@
+import math
 # pyrefly: ignore[missing-import]
 from typing import Any, cast
 # pyrefly: ignore [missing-import]
@@ -35,8 +36,10 @@ class ReRanker:
             scores = model.predict(cast(Any, pairs))
 
             for i, score in enumerate(scores):
-                candidate_docs[i]["rerank_score"] = float(score)
-                candidate_docs[i]["score"] = float(score)
+                # Chuẩn hóa logit bằng hàm Sigmoid
+                sigmoid_score = 1.0 / (1.0 + math.exp(-float(score)))
+                candidate_docs[i]["rerank_score"] = sigmoid_score
+                candidate_docs[i]["score"] = sigmoid_score
 
             sorted_documents = sorted(candidate_docs, key=lambda x: x.get("rerank_score", 0.0), reverse=True)
             return sorted_documents[:top_k]

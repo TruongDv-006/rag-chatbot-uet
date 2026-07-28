@@ -36,6 +36,8 @@ class RAGGenerator:
 
         # Lọc tài liệu chỉ khi có ngưỡng hợp lệ
         if threshold > 0.0:
+            scores_str = ", ".join([f"{doc.get('score', 0.0):.4f}" for doc in retrieved_docs])
+            print(f"[RAG Retrieval] Query: '{query}' | Scores: [{scores_str}] | Threshold: {threshold}")
             valid_docs = [doc for doc in retrieved_docs if doc.get("score", 0.0) >= threshold]
             # Không có tài liệu đạt chuẩn thì fallback, chống hallucination
             if not valid_docs:
