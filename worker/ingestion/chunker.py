@@ -113,7 +113,7 @@ def chunk_raw_web(json_string, filename):
         return []
 
     chunks = []
-    MAX_CHUNK_SIZE = 350  # Kích thước tối ưu cho 1 khối thông tin web
+    MAX_CHUNK_SIZE = 500  # Kích thước tối ưu cho 1 khối thông tin web
     OVERLAP_LINES = 1     # Gối đầu 1 dòng giữa các chunk
 
     i = 0
@@ -122,8 +122,13 @@ def chunk_raw_web(json_string, filename):
         current_len = 0
         
         j = i
+        broke_by_section = False
         while j < len(lines):
             line = lines[j]
+            # Nếu gặp mục mới (ví dụ "12) Viện...", "13) Khoa...") và đã có nội dung -> ngắt chunk ở đây để không bị xé lẻ mục
+            if current_lines and re.match(r'^\d+[\).:]', line):
+                broke_by_section = True
+                break
             if current_len + len(line) > MAX_CHUNK_SIZE and current_lines:
                 break
             current_lines.append(line)
@@ -136,8 +141,11 @@ def chunk_raw_web(json_string, filename):
             "metadata": {"source": filename, "url": url, "title": title}
         })
 
-        advance = max(1, len(current_lines) - OVERLAP_LINES)
-        i += advance
+        if broke_by_section:
+            i = j
+        else:
+            advance = max(1, len(current_lines) - OVERLAP_LINES)
+            i += advance
 
     return chunks
 
