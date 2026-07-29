@@ -67,8 +67,9 @@ class UetHandbookScraper:
         # Lay noi dung tu khoi main-content tro di
         body_content = soup.find("body")
         if body_content:
-            for tag in body_content.find_all(['span', 'p', 'h1', 'h2', 'h3','li','td','th']):
-                if tag.find(['span', 'p', 'h1', 'h2', 'h3', 'li', 'td', 'th']):
+            target_tags = ['span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th', 'div']
+            for tag in body_content.find_all(target_tags):
+                if tag.find(target_tags):
                     continue
                 text = tag.get_text(strip=True)
                 if text and text not in footer_keywords and text not in content_blocks:
