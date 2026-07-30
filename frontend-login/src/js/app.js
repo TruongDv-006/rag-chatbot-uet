@@ -19,9 +19,9 @@
    - USER_URL / ADMIN_URL: URL redirect sau khi đăng nhập thành công
 ============================================================ */
 const CONFIG = {
-    API_BASE:  'http://localhost:8000/api/v1',  // Gọi thẳng backend
-    USER_URL:  'http://localhost:4000',          // frontend-user
-    ADMIN_URL: 'http://localhost:4001',          // frontend-admin
+    API_BASE:  '/api/v1',        // Gọi qua Nginx gateway (/api/v1)
+    USER_URL:  '/chat/',         // frontend-user qua Nginx
+    ADMIN_URL: '/admin-panel/',   // frontend-admin qua Nginx
     TOKEN_KEY: 'uet_access_token',
 };
 

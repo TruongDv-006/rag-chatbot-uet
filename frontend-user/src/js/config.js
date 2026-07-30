@@ -2,8 +2,8 @@
  * config.js – Cấu hình toàn cục frontend-user
  */
 export const CONFIG = {
-    BASE_URL: 'http://localhost:8000/api/v1',
-    LOGIN_PAGE_URL: 'http://localhost:5000',
+    BASE_URL: '/api/v1',
+    LOGIN_PAGE_URL: '/',
     TOKEN_KEY: 'uet_access_token',
 };
 
