@@ -47,7 +47,7 @@ def chunk_regulatory_handbook(text_content, filename):
 def chunk_academic_calendar(text_content, filename):
     """
     Hàm này dùng để chunk các đoạn văn. Kiểu chunk ở đây theo cấu trúc 
-    Chương, Điều,... dùng regex để chunk.
+    Học kỳ,... dùng regex để chunk.
     """
     chunks = []
     current_hocky = "Thong tin chung"
@@ -91,9 +91,8 @@ def chunk_academic_calendar(text_content, filename):
 
 def chunk_raw_web(json_string, filename):
     """
-    Hàm chunk tối ưu cho raw_web:
-    - Chèn tiêu đề trang (Title) vào đầu mỗi chunk để giữ ngữ cảnh.
-    - Gộp 3 - 5 dòng liên tiếp (khoảng 300 - 400 ký tự) có độ gối đầu (overlap)
+    Hàm chunk cho raw_web:
+    - Gộp 3 - 5 dòng liên tiếp có độ gối đầu (overlap)
       để đảm bảo thông tin liên hệ/thủ tục không bị ngắt rời rạc.
     """
     try:
@@ -113,7 +112,7 @@ def chunk_raw_web(json_string, filename):
         return []
 
     chunks = []
-    MAX_CHUNK_SIZE = 500  # Kích thước tối ưu cho 1 khối thông tin web
+    MAX_CHUNK_SIZE = 500  # Kích thước cho 1 khối thông tin web
     OVERLAP_LINES = 1     # Gối đầu 1 dòng giữa các chunk
 
     i = 0
@@ -125,7 +124,6 @@ def chunk_raw_web(json_string, filename):
         broke_by_section = False
         while j < len(lines):
             line = lines[j]
-            # Nếu gặp mục mới (ví dụ "12) Viện...", "13) Khoa...") và đã có nội dung -> ngắt chunk ở đây để không bị xé lẻ mục
             if current_lines and re.match(r'^\d+[\).:]', line):
                 broke_by_section = True
                 break
