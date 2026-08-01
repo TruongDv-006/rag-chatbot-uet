@@ -26,7 +26,27 @@ class RAGGenerator:
     
 
 
-    def execute(self, query:str, retrieved_docs:list[dict], score_threshold: float):
+    def rewrite_query(self, query: str, chat_history: list[dict] | None = None) -> str:
+        """
+        Viết lại câu hỏi của sinh viên dựa trên lịch sử hội thoại 3 tin nhắn gần nhất
+        thành câu hỏi độc lập (Standalone Query) để retrieval RAG đạt độ chính xác cao nhất.
+        """
+        if not chat_history:
+            return query
+        
+        messages = self.prompt_manager.create_query_rewrite_messages(query, chat_history)
+        try:
+            rewritten = self.llm_client.generate(messages)
+            rewritten = rewritten.strip().strip('"').strip("'")
+            if rewritten:
+                print(f"[Query Rewriting] Câu hỏi gốc: '{query}' -> Câu hỏi độc lập: '{rewritten}'")
+                return rewritten
+        except Exception as e:
+            print(f"[Query Rewriting Warning] Không thể viết lại câu hỏi: {e}")
+        
+        return query
+
+    def execute(self, query: str, retrieved_docs: list[dict], score_threshold: float, chat_history: list[dict] | None = None):
         """
         Hàm thực thi chính của luồng RAG.
         - score_threshold = 0.0  → Chưa có embedding (Qdrant trống), vẫn gọi LLM
@@ -48,7 +68,7 @@ class RAGGenerator:
             valid_docs = retrieved_docs or []
             print(f"[RAG] Không có embedding, LLM sẽ trả lời dựa trên kiến thức chung cho: '{query}'")
 
-        messages = self.prompt_manager.create_messages(valid_docs, query)
+        messages = self.prompt_manager.create_messages(valid_docs, query, chat_history=chat_history)
 
         try:
             answer = self.llm_client.generate(messages)

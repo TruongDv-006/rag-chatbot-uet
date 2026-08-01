@@ -9,7 +9,7 @@ class LLMClient(ABC):
     phải viết 1 hàm "generate"
     """
     @abstractmethod
-    def generate(self, messages:list) -> str:
+    def generate(self, messages: list, model_name: str | None = None) -> str:
         pass
 
 
@@ -28,19 +28,21 @@ class OpenAICompatibleClient(LLMClient):
             api_key = generation_config.LLM_API_KEY
         )
         self.model_name = generation_config.MODEL_NAME
-    def generate(self, messages:list) -> str:
+
+    def generate(self, messages: list, model_name: str | None = None) -> str:
         """
-        Hàm này gửi dữ liệu qua Ollama và nhận câu trả lời về
+        Hàm này gửi dữ liệu qua Ollama và nhận câu trả lời về.
         """
+        target_model = model_name or self.model_name
         try:
-            #Gửi câu hỏi
+            # Gửi câu hỏi
             response = self.client.chat.completions.create(
-                model = self.model_name,
-                messages= messages,
-                max_tokens=generation_config.MAX_TOKENS,
-                temperature=generation_config.TEMPERATURE
+                model = target_model,
+                messages = messages,
+                max_tokens = generation_config.MAX_TOKENS,
+                temperature = generation_config.TEMPERATURE
             )
             content = response.choices[0].message.content
             return content.strip() if content else ""
         except Exception as e:
-            raise RuntimeWarning(f"Lỗi kết nối đến Ollama Engine:{e}")
+            raise RuntimeWarning(f"Lỗi kết nối đến Ollama Engine ({target_model}): {e}")

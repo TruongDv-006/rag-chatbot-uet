@@ -1,6 +1,10 @@
 # pyrefly: ignore [missing-import]
 from qdrant_client.grpc import Range
 import os
+import re
+import urllib.parse
+# pyrefly: ignore [missing-import]
+from app.generation.config import generation_config
 # pyrefly: ignore [missing-import]
 import requests
 # pyrefly: ignore [missing-import]
@@ -66,6 +70,30 @@ class ChatService:
             print(f"[Embedding Warning] {e}")
         return []
 
+    def _needs_query_rewriting(self, query: str, chat_history: list[dict] | None) -> bool:
+        """
+        Kiểm tra xem câu hỏi có thực sự cần phải Rewrite hay không.
+        Chỉ Rewrite khi câu hỏi chứa từ khuyết ngữ cảnh (nó, đó, thế còn...) hoặc câu quá ngắn thiếu chủ ngữ.
+        Giữ nguyên nếu câu hỏi đã có đầy đủ chủ đề độc lập.
+        """
+        if not chat_history:
+            return False
+        
+        q_lower = query.lower().strip()
+        
+        # Các từ ngữ thể hiện sự phụ thuộc vào ngữ cảnh hội thoại trước
+        context_triggers = ["nó", "đó", "cái này", "cái đó", "thế còn", "vậy còn", "ở đâu", "bao nhiêu", "bao giờ", "lúc nào", "khi nào"]
+        has_trigger = any(re.search(rf"\b{re.escape(word)}\b", q_lower) for word in context_triggers)
+        
+        # Các từ khóa chủ đề độc lập rõ ràng
+        standalone_domain_keywords = ["điểm", "học lại", "cải thiện", "bảo lưu", "học bổng", "thủ tục", "quy chế", "tốt nghiệp", "thẻ sinh viên"]
+        has_standalone_domain = any(kw in q_lower for kw in standalone_domain_keywords)
+        
+        if has_standalone_domain and not has_trigger:
+            return False
+            
+        return has_trigger or len(q_lower.split()) <= 4
+
 
     def process_message(self,db: Session, message:str, username:str, session_id:int | None=None):
         try:
@@ -95,7 +123,19 @@ class ChatService:
                 db.commit()
                 db.refresh(current_session)
 
-            #Lưu câu hỏi của sinh viên xuống DB ChatMessage
+            # Lấy 1 tin nhắn gần nhất của phiên chat làm Context Window (trước khi thêm tin nhắn mới)
+            recent_msgs = db.query(ChatMessage).filter(
+                ChatMessage.session_id == current_session.id
+            ).order_by(ChatMessage.created_at.desc()).limit(1).all()
+            
+            # Đảo ngược mảng để đúng thứ tự thời gian (từ cũ tới mới)
+            recent_msgs.reverse()
+            chat_history = [
+                {"role": m.role, "content": m.content}
+                for m in recent_msgs
+            ]
+
+            # Lưu câu hỏi của sinh viên xuống DB ChatMessage
             user_msg_obj = ChatMessage(
                 role="student",
                 content=message,
@@ -103,53 +143,113 @@ class ChatService:
             )
             db.add(user_msg_obj)
 
-            # Embedding câu hỏi thành vector
-            query_vector = self._get_embedding(message)
-            retrieved_docs = self.retriever.search(
-                query = message,
-                query_vector = query_vector,
-                top_k=5
-            )
+            # Kiểm tra nếu là câu chào hỏi/cảm ơn đơn giản -> Trả lời ngay bằng template cố định (không gọi LLM & RAG)
+            clean_msg = message.strip().lower().strip(".!?,~😊👋")
+            GREETING_RESPONSES = {
+                "chào": "Xin chào! Tôi là Trợ lý tư vấn học vụ UET (Trường Đại học Công nghệ - ĐHQGHN). Tôi có thể giúp gì cho bạn về quy chế, chương trình đào tạo hay thủ tục học vụ?",
+                "xin chào": "Xin chào! Tôi là Trợ lý tư vấn học vụ UET (Trường Đại học Công nghệ - ĐHQGHN). Tôi có thể giúp gì cho bạn về quy chế, chương trình đào tạo hay thủ tục học vụ?",
+                "chào bạn": "Xin chào! Tôi là Trợ lý tư vấn học vụ UET (Trường Đại học Công nghệ - ĐHQGHN). Tôi có thể giúp gì cho bạn về quy chế, chương trình đào tạo hay thủ tục học vụ?",
+                "hello": "Xin chào! Tôi là Trợ lý tư vấn học vụ UET (Trường Đại học Công nghệ - ĐHQGHN). Tôi có thể giúp gì cho bạn về quy chế, chương trình đào tạo hay thủ tục học vụ?",
+                "hi": "Xin chào! Tôi là Trợ lý tư vấn học vụ UET (Trường Đại học Công nghệ - ĐHQGHN). Tôi có thể giúp gì cho bạn về quy chế, chương trình đào tạo hay thủ tục học vụ?",
+                "cảm ơn": "Không có gì! Rất vui được hỗ trợ bạn. Nếu bạn có thêm thắc mắc gì về học vụ UET, đừng ngần ngại đặt câu hỏi nhé!",
+                "cảm ơn bạn": "Không có gì! Rất vui được hỗ trợ bạn. Nếu bạn có thêm thắc mắc gì về học vụ UET, đừng ngần ngại đặt câu hỏi nhé!",
+                "thanks": "Không có gì! Rất vui được hỗ trợ bạn. Nếu bạn có thêm thắc mắc gì về học vụ UET, đừng ngần ngại đặt câu hỏi nhé!",
+                "thank you": "Không có gì! Rất vui được hỗ trợ bạn. Nếu bạn có thêm thắc mắc gì về học vụ UET, đừng ngần ngại đặt câu hỏi nhé!",
+                "bạn là ai": "Tôi là Trợ lý tư vấn học vụ UET, hỗ trợ sinh viên Trường Đại học Công nghệ - ĐHQGHN tra cứu quy chế, quy định và các thủ tục học vụ.",
+                "bạn tên gì": "Tôi là Trợ lý tư vấn học vụ UET, hỗ trợ sinh viên Trường Đại học Công nghệ - ĐHQGHN tra cứu quy chế, quy định và các thủ tục học vụ.",
+                "bạn tên là gì": "Tôi là Trợ lý tư vấn học vụ UET, hỗ trợ sinh viên Trường Đại học Công nghệ - ĐHQGHN tra cứu quy chế, quy định và các thủ tục học vụ.",
+                "tạm biệt": "Tạm biệt! Nếu bạn có thêm câu hỏi về học vụ, đừng ngần ngại liên hệ với tôi. Chúc bạn một ngày tốt lành!"
+            }
 
-            # Nếu không có embedding (Qdrant chưa có dữ liệu), hạ ngưỡng để LLM vẫn được gọi
-            score_threshold = 0.0 if not query_vector else -5.0
-            reply_text = self.generator.execute(
-                query = message,
-                retrieved_docs=retrieved_docs,
-                score_threshold=score_threshold
-            )
+            if clean_msg in GREETING_RESPONSES:
+                reply_text = GREETING_RESPONSES[clean_msg]
+                retrieved_docs = []
+            else:
+                # Kiểm tra xem có cần Viết lại câu hỏi độc lập (Query Rewriting) hay không
+                if self._needs_query_rewriting(message, chat_history):
+                    search_query = self.generator.rewrite_query(query=message, chat_history=chat_history)
+                else:
+                    search_query = message
 
-            #
-            valid_docs = [doc for doc in retrieved_docs if doc.get("score",0.0) >= score_threshold]
+                # Embedding câu hỏi đã viết lại thành vector để tìm kiếm RAG
+                query_vector = self._get_embedding(search_query)
+                retrieved_docs = self.retriever.search(
+                    query=search_query,
+                    query_vector=query_vector,
+                    top_k=5
+                )
+                score_threshold = 0.0 if not query_vector else generation_config.DEFAULT_SCORE_THRESHOLD
+                reply_text = self.generator.execute(
+                    query=message,
+                    retrieved_docs=retrieved_docs,
+                    score_threshold=score_threshold,
+                    chat_history=chat_history
+                )
+
+            # 1. Thu thập tất cả các file nguồn từ retrieved_docs
+            unique_sources = []
             mapped_sources = {}
+            for doc in retrieved_docs:
+                raw_src = doc.get("source")
+                if not raw_src or not str(raw_src).strip():
+                    clean_src = "Sổ tay sinh viên UET"
+                else:
+                    clean_src = urllib.parse.unquote(str(raw_src)).strip()
+                    if clean_src.endswith("_parsed.txt"):
+                        clean_src = clean_src[:-11]
+                    elif clean_src.endswith(".json"):
+                        clean_src = clean_src[:-5]
+                    elif clean_src.endswith(".txt"):
+                        clean_src = clean_src[:-4]
+                
+                if clean_src not in unique_sources:
+                    unique_sources.append(clean_src)
 
-            for index, doc in enumerate(valid_docs, start=1):
-                mapped_sources[str(index)]=doc.get("source","Sổ tay UET")
+            for index, src in enumerate(unique_sources, start=1):
+                mapped_sources[str(index)] = src
 
-            # Tự động gán phần "Nguồn tham khảo:" vào cuối câu trả lời nếu LLM chưa ghi
+            # 2. Xử lý trích dẫn và tự động tạo Nguồn tham khảo chuẩn
             if reply_text and "Tôi không có đủ dữ liệu để trả lời" not in reply_text:
-                if "Nguồn tham khảo:" not in reply_text and "Tài liệu tham khảo:" not in reply_text:
-                    import re
-                    import urllib.parse
-                    matches = re.findall(r'\[Tài liệu[^\]]*\]', reply_text, re.IGNORECASE)
-                    cited_indices_set = set()
-                    for m in matches:
-                        for d in re.findall(r'\d+', m):
-                            cited_indices_set.add(int(d))
-                    cited_indices = sorted(list(cited_indices_set))
-                    source_lines = []
+                # Bước A: Tự động bọc ngoặc [Tài liệu X] và xóa cụm lặp "Tài liệu [Tài liệu X]"
+                reply_text = re.sub(r'(?<!\[)Tài liệu\s+(\d+)(?!\])', r'[Tài liệu \1]', reply_text, flags=re.IGNORECASE)
+                reply_text = re.sub(r'(?:Tài\s+liệu\s+)+\[Tài\s+liệu\s+(\d+)\]', r'[Tài liệu \1]', reply_text, flags=re.IGNORECASE)
 
-                    if cited_indices:
-                        for idx in cited_indices:
-                            if 1 <= idx <= len(valid_docs):
-                                raw_src = valid_docs[idx - 1].get("source", f"Tài liệu {idx}")
-                                clean_src = urllib.parse.unquote(raw_src)
-                                if clean_src.endswith("_parsed.txt"):
-                                    clean_src = clean_src[:-11]
-                                source_lines.append(f"- [Tài liệu {idx}]: {clean_src}")
+                # Bước B1: Xóa phần Nguồn/Tài liệu tham khảo do LLM tự sinh hoặc từ lịch sử hội thoại (nếu có)
+                reply_text = re.sub(
+                    r'\n*(?:📌|📍|👉|\*|\#)*\s*(?:\*\*|\#\#|\#)?\s*(?:Nguồn|Tài liệu)\s+tham\s+khảo\s*:?.*$', 
+                    '', 
+                    reply_text, 
+                    flags=re.DOTALL | re.IGNORECASE
+                ).strip()
 
-                    if source_lines:
-                        reply_text = reply_text.strip() + "\n\n**Nguồn tham khảo:**\n" + "\n".join(source_lines)
+                # Bước B2: Xóa triệt để các dòng link/định nghĩa thừa dạng [Tài liệu X]: http... ở cuối câu trả lời
+                reply_text = re.sub(r'(\n+\s*\[Tài liệu\s*\d+\]\s*:\s*\S+)+$', '', reply_text, flags=re.IGNORECASE).strip()
+
+                # Bước B3: Lọc sạch icon/emoji rác bị sót lại ở cuối
+                reply_text = re.sub(r'[\n\s📌📍👉]+$', '', reply_text).strip()
+
+                # Bước C: Quét tất cả chỉ số [Tài liệu X] có trong câu trả lời
+                matches = re.findall(r'\[Tài liệu\s*(\d+)\]', reply_text, re.IGNORECASE)
+                cited_indices_set = set()
+                for m in matches:
+                    cited_indices_set.add(int(m))
+                cited_indices = sorted(list(cited_indices_set))
+
+                # Nếu LLM trả lời chi tiết nhưng quên chèn [Tài liệu X] inline (và không phải câu chào xã giao)
+                is_greeting = len(reply_text) < 45 or reply_text.lower().startswith("xin chào") or reply_text.lower().startswith("rất vui")
+                if not cited_indices and unique_sources and not is_greeting:
+                    cited_indices = list(range(1, len(unique_sources) + 1))
+
+                # Bước D: Tạo lại danh sách Nguồn tham khảo đầy đủ và chuẩn xác
+                source_lines = []
+                if cited_indices:
+                    for idx in cited_indices:
+                        if 1 <= idx <= len(unique_sources):
+                            clean_src = unique_sources[idx - 1]
+                            source_lines.append(f"- **[Tài liệu {idx}]**: {clean_src}")
+
+                if source_lines:
+                    reply_text = reply_text.strip() + "\n\n**Nguồn tham khảo:**\n" + "\n".join(source_lines)
 
             ai_msg_obj = ChatMessage(
                 role="assistant",
