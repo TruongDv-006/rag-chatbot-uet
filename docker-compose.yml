@@ -160,7 +160,7 @@ services:
       - DATABASE_URL=postgresql://user:password@postgres_db:5432/uet_rag_db
       - QDRANT_URL=http://qdrant_db:6333
       - REDIS_URL=redis://redis_broker:6379/0
-      - LLM_API_BASE=https://permissions-playlist-transactions-isle.trycloudflare.com/v1
+      - LLM_API_BASE=https://let-olympics-encoding-whether.trycloudflare.com/v1
       - SECRET_KEY=UET_RAG_SUPER_SECRET_KEY_2026
     ports:
       - "8000:8000"
