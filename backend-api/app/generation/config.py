@@ -3,10 +3,10 @@ from pydantic_settings import BaseSettings
     
 class GenerationConfig(BaseSettings):
     # Tên model
-    MODEL_NAME:str = "qwen2.5:3b"
+    MODEL_NAME:str = "qwen2.5:7b"
 
     #Địa chỉ kết nối với Ollama trên Kaggle GPU
-    LLM_API_BASE:str = "https://permissions-playlist-transactions-isle.trycloudflare.com/v1"
+    LLM_API_BASE:str = "https://let-olympics-encoding-whether.trycloudflare.com/v1"
     
     #Chìa khóa ảo (do OLLAMA không bắt buộc nên ta để mặc định)
     LLM_API_KEY:str = "ollama"
